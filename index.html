@@ -1,0 +1,2542 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cozy ASMR Soundscape Studio & Video Recorder</title>
+    <meta name="description" content="プロシージャル合成音源による高品質ASMRジェネレーター。自分好みの癒やし音をミックスして15分のASMR動画を録画・ダウンロードできます。">
+    
+    <!-- Google Fonts: Outfit & Noto Sans JP -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Material Symbols for premium icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    
+    <style>
+    /* Cozy ASMR Soundscape Studio & Video Recorder Stylesheet */
+
+    /* CSS Variables for Premium Color Themes & Visual Tokens */
+    :root {
+        --font-primary: 'Outfit', 'Noto Sans JP', sans-serif;
+        
+        /* Sleek Slate/Blue Base for Glassmorphism */
+        --base-dark: #070b19;
+        --glass-bg: rgba(10, 15, 30, 0.45);
+        --glass-bg-hover: rgba(15, 23, 42, 0.55);
+        --glass-border: rgba(255, 255, 255, 0.07);
+        --glass-border-hover: rgba(255, 255, 255, 0.15);
+        --glass-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+        
+        /* Default Cyber Theme Gradients */
+        --color-primary: #00f2fe;
+        --color-secondary: #4facfe;
+        --color-accent-grad: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+        --color-accent-glow: rgba(0, 242, 254, 0.4);
+        
+        /* Other CSS states */
+        --color-record-active: #ff3366;
+        --color-record-glow: rgba(255, 51, 102, 0.5);
+        
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --text-dim: #64748b;
+    }
+
+    /* Sunset Theme overrides */
+    [data-active-theme="sunset"] {
+        --color-primary: #f093fb;
+        --color-secondary: #f5576c;
+        --color-accent-grad: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --color-accent-glow: rgba(245, 87, 108, 0.4);
+    }
+
+    /* Aurora Theme overrides */
+    [data-active-theme="aurora"] {
+        --color-primary: #43e97b;
+        --color-secondary: #38f9d7;
+        --color-accent-grad: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        --color-accent-glow: rgba(56, 249, 215, 0.4);
+    }
+
+    /* Amber Theme overrides */
+    [data-active-theme="amber"] {
+        --color-primary: #f6d365;
+        --color-secondary: #fda085;
+        --color-accent-grad: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+        --color-accent-glow: rgba(253, 160, 133, 0.4);
+    }
+
+    /* Reset and Global Styles */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background-color: var(--base-dark);
+        color: var(--text-main);
+        font-family: var(--font-primary);
+        min-height: 100vh;
+        overflow-x: hidden;
+        position: relative;
+    }
+
+    /* Full-screen Background with Slow Pan Animation */
+    .app-background {
+        position: fixed;
+        top: -5%;
+        left: -5%;
+        width: 110%;
+        height: 110%;
+        background-image: url('assets/background.png');
+        background-size: cover;
+        background-position: center;
+        filter: brightness(0.6) contrast(1.05);
+        z-index: -3;
+        animation: slowPan 40s infinite alternate ease-in-out;
+    }
+
+    @keyframes slowPan {
+        0% {
+            transform: scale(1) translate(0, 0);
+        }
+        50% {
+            transform: scale(1.05) translate(1%, -1%);
+        }
+        100% {
+            transform: scale(1.02) translate(-0.5%, 0.5%);
+        }
+    }
+
+    /* Drifting Ambient Glowing Orbs */
+    .ambient-glow {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80vw;
+        height: 80vh;
+        background: radial-gradient(circle, var(--color-accent-glow) 0%, rgba(0,0,0,0) 70%);
+        z-index: -2;
+        opacity: 0.7;
+        pointer-events: none;
+        transition: background 1s ease;
+    }
+
+    /* Full-Screen Visualizer Canvas */
+    #visualizer-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        pointer-events: none;
+        opacity: 0.6;
+    }
+
+    /* Container */
+    .app-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    /* App Header styling */
+    .app-header {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    .logo {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .logo-icon {
+        font-size: 2.8rem;
+        background: var(--color-accent-grad);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: pulseGlow 4s infinite alternate;
+    }
+
+    @keyframes pulseGlow {
+        0% { filter: drop-shadow(0 0 2px var(--color-primary)); }
+        100% { filter: drop-shadow(0 0 15px var(--color-primary)); }
+    }
+
+    .logo h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        letter-spacing: 4px;
+        background: var(--color-accent-grad);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+        font-size: 0.95rem;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-top: 5px;
+        font-weight: 300;
+    }
+
+    /* Main Grid Layout */
+    .app-main {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 24px;
+    }
+
+    .right-column {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    /* Premium Glassmorphic Cards */
+    .control-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        box-shadow: var(--glass-shadow);
+        padding: 28px;
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+                    box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+                    border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .control-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--glass-border-hover);
+        box-shadow: 0 20px 48px 0 rgba(0, 0, 0, 0.6);
+    }
+
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text-main);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        padding-bottom: 12px;
+    }
+
+    .card-title span {
+        color: var(--color-primary);
+    }
+
+    /* Sound Mixer Rows */
+    .mixer-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .mixer-row {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        border-radius: 16px;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        transition: background 0.3s ease, border-color 0.3s ease;
+    }
+
+    .mixer-row:hover {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .channel-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex: 1;
+        min-width: 180px;
+    }
+
+    .channel-icon {
+        font-size: 1.8rem;
+        color: var(--text-muted);
+        transition: color 0.3s ease;
+    }
+
+    .mixer-row:hover .channel-icon,
+    .mixer-row.active .channel-icon {
+        color: var(--color-primary);
+    }
+
+    .channel-text {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .channel-name {
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+
+    .channel-desc {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    .slider-container {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex: 2;
+        max-width: 320px;
+        width: 100%;
+    }
+
+    .slider-container.flex-col {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .binaural-controls-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        width: 100%;
+    }
+
+    /* Sound Slider Design */
+    .sound-slider {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 6px;
+        border-radius: 3px;
+        background: rgba(255, 255, 255, 0.1);
+        outline: none;
+        transition: background 0.3s ease;
+    }
+
+    .sound-slider::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 6px;
+        cursor: pointer;
+    }
+
+    .sound-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--text-main);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        cursor: pointer;
+        margin-top: -6px;
+        transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .sound-slider:hover::-webkit-slider-thumb {
+        transform: scale(1.2);
+        background: var(--color-primary);
+        box-shadow: 0 0 12px var(--color-accent-glow);
+    }
+
+    .volume-value {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        min-width: 35px;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Mute Button Design */
+    .mute-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px;
+        border-radius: 50%;
+        transition: color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .mute-btn:hover {
+        color: var(--text-main);
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .mute-btn.muted {
+        color: var(--text-dim);
+    }
+
+    .mute-btn.muted span {
+        font-variation-settings: 'FILL' 0;
+    }
+
+    /* Binaural beats selector buttons */
+    .beats-selector-group {
+        display: flex;
+        gap: 8px;
+        width: 100%;
+        margin-top: 4px;
+    }
+
+    .beat-select-btn, .solfeggio-select-btn {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        color: var(--text-muted);
+        padding: 6px 4px;
+        font-size: 0.72rem;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .beat-select-btn:hover, .solfeggio-select-btn:hover {
+        background: rgba(255, 255, 255, 0.07);
+        color: var(--text-main);
+    }
+
+    .beat-select-btn.active, .solfeggio-select-btn.active {
+        background: var(--color-accent-grad);
+        border-color: transparent;
+        color: var(--base-dark);
+        font-weight: 600;
+        box-shadow: 0 0 12px var(--color-accent-glow);
+    }
+
+    .breath-guide-toggle-btn {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        color: var(--text-muted);
+        padding: 8px 12px;
+        font-size: 0.78rem;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        margin-top: 4px;
+    }
+
+    .breath-guide-toggle-btn:hover {
+        background: rgba(255, 255, 255, 0.07);
+        color: var(--text-main);
+    }
+
+    .breath-guide-toggle-btn.active {
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+        background: rgba(0, 242, 254, 0.08);
+        box-shadow: inset 0 0 8px rgba(0, 242, 254, 0.1);
+        font-weight: 600;
+    }
+
+    /* Play state button container */
+    .play-state-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        padding: 10px 0;
+    }
+
+    .glowing-play-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        background: var(--color-accent-grad);
+        border: none;
+        color: var(--base-dark);
+        padding: 16px 32px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        border-radius: 40px;
+        cursor: pointer;
+        box-shadow: 0 4px 20px var(--color-accent-glow);
+        transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                    box-shadow 0.2s ease,
+                    background 0.5s ease;
+    }
+
+    .glowing-play-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 30px var(--color-accent-glow);
+    }
+
+    .glowing-play-btn:active {
+        transform: scale(0.98);
+    }
+
+    .glowing-play-btn.playing {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: var(--text-main);
+        box-shadow: none;
+    }
+
+    .glowing-play-btn.playing:hover {
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    .play-icon {
+        font-size: 1.6rem;
+    }
+
+    .startup-hint {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        text-align: center;
+    }
+
+    /* Timer Selector & Display */
+    .timer-selector {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .timer-btn {
+        flex: 1;
+        min-width: 60px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        color: var(--text-muted);
+        padding: 8px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .timer-btn:hover {
+        background: rgba(255, 255, 255, 0.07);
+        color: var(--text-main);
+    }
+
+    .timer-btn.active {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: var(--color-primary);
+        color: var(--text-main);
+        box-shadow: 0 0 10px rgba(0, 242, 254, 0.15);
+    }
+
+    .timer-display-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 16px;
+        padding: 16px 24px;
+        border: 1px solid rgba(255, 255, 255, 0.02);
+    }
+
+    .timer-time {
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        font-variant-numeric: tabular-nums;
+        background: var(--color-accent-grad);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .timer-status-dot {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .timer-status-dot::before {
+        content: '';
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background-color: var(--text-dim);
+        border-radius: 50%;
+    }
+
+    .timer-status-dot.active::before {
+        background-color: var(--color-primary);
+        box-shadow: 0 0 8px var(--color-primary);
+        animation: flash 1s infinite alternate;
+    }
+
+    @keyframes flash {
+        0% { opacity: 0.4; }
+        100% { opacity: 1; }
+    }
+
+    /* Recording Panel */
+    .record-description {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        line-height: 1.5;
+        margin-bottom: 18px;
+    }
+
+    .record-settings {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .settings-label {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+    }
+
+    .premium-select {
+        background: rgba(10, 15, 30, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--text-main);
+        padding: 8px 14px;
+        border-radius: 10px;
+        outline: none;
+        font-family: var(--font-primary);
+        font-size: 0.82rem;
+        cursor: pointer;
+        flex: 1;
+    }
+
+    .premium-select:focus {
+        border-color: var(--color-primary);
+    }
+
+    .record-controls {
+        display: flex;
+        gap: 12px;
+    }
+
+    .record-btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        background: var(--color-record-active);
+        color: white;
+        border: none;
+        padding: 14px;
+        border-radius: 16px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        box-shadow: 0 4px 15px var(--color-record-glow);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .record-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px var(--color-record-glow);
+        filter: brightness(1.1);
+    }
+
+    .record-btn:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    .record-btn:disabled {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        color: var(--text-dim);
+        box-shadow: none;
+        cursor: not-allowed;
+    }
+
+    .record-btn:disabled .record-icon {
+        color: var(--text-dim);
+    }
+
+    .record-icon {
+        font-size: 1.1rem;
+        color: white;
+    }
+
+    .record-btn.recording {
+        background: rgba(255, 51, 102, 0.2);
+        border: 1px solid var(--color-record-active);
+        color: var(--color-record-active);
+        animation: pulsateBorder 2s infinite alternate;
+    }
+
+    @keyframes pulsateBorder {
+        0% { box-shadow: 0 0 5px rgba(255, 51, 102, 0.2); }
+        100% { box-shadow: 0 0 15px rgba(255, 51, 102, 0.6); }
+    }
+
+    .record-btn.recording .record-icon {
+        animation: flash 1s infinite alternate;
+    }
+
+    .stop-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: var(--text-main);
+        box-shadow: none;
+    }
+
+    .stop-btn:hover {
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    /* Progress bar styling */
+    .progress-bar-container {
+        margin-top: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .progress-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    .progress-track {
+        width: 100%;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, var(--color-record-active), #ff6b8b);
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+
+    /* Visualizer Settings Panel */
+    .visualizer-settings-card {
+        grid-column: 1 / -1;
+    }
+
+    .visualizer-options {
+        display: flex;
+        gap: 30px;
+        flex-wrap: wrap;
+    }
+
+    .option-group {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        flex: 1;
+        min-width: 250px;
+    }
+
+    .option-label {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    .visualizer-selector-group {
+        display: flex;
+        gap: 10px;
+    }
+
+    .visual-style-btn {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        color: var(--text-muted);
+        padding: 10px 16px;
+        font-size: 0.82rem;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .visual-style-btn:hover {
+        background: rgba(255, 255, 255, 0.07);
+        color: var(--text-main);
+    }
+
+    .visual-style-btn.active {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: var(--color-primary);
+        color: var(--text-main);
+        box-shadow: 0 0 12px rgba(0, 242, 254, 0.12);
+    }
+
+    .theme-selector-group {
+        display: flex;
+        gap: 14px;
+    }
+
+    .theme-select-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        border: 3px solid transparent;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .theme-select-btn:hover {
+        transform: scale(1.15);
+    }
+
+    .theme-select-btn.active {
+        border-color: white;
+        transform: scale(1.1);
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+    }
+
+    /* Footer Info */
+    .app-footer-info {
+        margin-top: 20px;
+        padding: 24px;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        border-radius: 20px;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+
+    .app-footer-info h3 {
+        font-size: 0.95rem;
+        color: var(--text-main);
+        margin-bottom: 12px;
+    }
+
+    .app-footer-info ol {
+        margin-left: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+
+    .app-footer-info ol li strong {
+        color: var(--text-main);
+    }
+
+    .app-footer-info .note {
+        font-size: 0.75rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        padding-top: 12px;
+        color: var(--text-dim);
+    }
+
+    /* Responsiveness adjustments */
+    @media (max-width: 900px) {
+        .app-main {
+            grid-template-columns: 1fr;
+        }
+        
+        .app-container {
+            padding: 20px 10px;
+        }
+        
+        .logo-icon {
+            font-size: 2.2rem;
+        }
+        
+        .logo h1 {
+            font-size: 2rem;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .mixer-row {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+        
+        .slider-container {
+            max-width: none;
+        }
+        
+        .visualizer-selector-group {
+            flex-direction: column;
+        }
+    }
+    </style>
+</head>
+<body>
+    <!-- Full-screen Background Canvas/Overlay -->
+    <div class="app-background"></div>
+    <div class="ambient-glow"></div>
+    <canvas id="visualizer-canvas"></canvas>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <span class="material-symbols-outlined logo-icon">blur_on</span>
+                <h1>AURA ASMR</h1>
+            </div>
+            <p class="subtitle">Soundscape Studio & Video Recorder</p>
+        </header>
+
+        <!-- Main Content Grid -->
+        <main class="app-main">
+            <!-- Left Side: Sound Mixer -->
+            <section class="control-card mixer-card">
+                <h2 class="card-title">
+                    <span class="material-symbols-outlined">tune</span>
+                    サウンドミキサー
+                </h2>
+                <div class="mixer-controls">
+                    <!-- Rain Control -->
+                    <div class="mixer-row" id="row-rain">
+                        <div class="channel-info">
+                            <span class="material-symbols-outlined channel-icon">rainy</span>
+                            <div class="channel-text">
+                                <span class="channel-name">雨音 (Rain)</span>
+                                <span class="channel-desc">静かなガラス窓を叩く雨</span>
+                            </div>
+                        </div>
+                        <div class="slider-container">
+                            <button class="mute-btn" data-channel="rain" aria-label="Mute Rain">
+                                <span class="material-symbols-outlined">volume_up</span>
+                            </button>
+                            <input type="range" min="0" max="1" step="0.01" value="0.5" class="sound-slider" id="slider-rain" data-channel="rain">
+                            <span class="volume-value" id="val-rain">50%</span>
+                        </div>
+                    </div>
+
+                    <!-- Campfire Control -->
+                    <div class="mixer-row" id="row-fire">
+                        <div class="channel-info">
+                            <span class="material-symbols-outlined channel-icon">local_fire_department</span>
+                            <div class="channel-text">
+                                <span class="channel-name">暖炉・焚き火 (Fire)</span>
+                                <span class="channel-desc">薪の爆ぜる心地よい音</span>
+                            </div>
+                        </div>
+                        <div class="slider-container">
+                            <button class="mute-btn" data-channel="fire" aria-label="Mute Fire">
+                                <span class="material-symbols-outlined">volume_up</span>
+                            </button>
+                            <input type="range" min="0" max="1" step="0.01" value="0.0" class="sound-slider" id="slider-fire" data-channel="fire">
+                            <span class="volume-value" id="val-fire">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- Ocean Waves Control -->
+                    <div class="mixer-row" id="row-waves">
+                        <div class="channel-info">
+                            <span class="material-symbols-outlined channel-icon">waves</span>
+                            <div class="channel-text">
+                                <span class="channel-name">波の音 (Waves)</span>
+                                <span class="channel-desc">満ち引きを繰り返す波</span>
+                            </div>
+                        </div>
+                        <div class="slider-container">
+                            <button class="mute-btn" data-channel="waves" aria-label="Mute Waves">
+                                <span class="material-symbols-outlined">volume_up</span>
+                            </button>
+                            <input type="range" min="0" max="1" step="0.01" value="0.0" class="sound-slider" id="slider-waves" data-channel="waves">
+                            <span class="volume-value" id="val-waves">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- Wind Control -->
+                    <div class="mixer-row" id="row-wind">
+                        <div class="channel-info">
+                            <span class="material-symbols-outlined channel-icon">air</span>
+                            <div class="channel-text">
+                                <span class="channel-name">風の音 (Wind)</span>
+                                <span class="channel-desc">梢をそよぐ穏やかな風</span>
+                            </div>
+                        </div>
+                        <div class="slider-container">
+                            <button class="mute-btn" data-channel="wind" aria-label="Mute Wind">
+                                <span class="material-symbols-outlined">volume_up</span>
+                            </button>
+                            <input type="range" min="0" max="1" step="0.01" value="0.0" class="sound-slider" id="slider-wind" data-channel="wind">
+                            <span class="volume-value" id="val-wind">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- Binaural Beats Control -->
+                    <div class="mixer-row" id="row-binaural">
+                        <div class="channel-info">
+                            <span class="material-symbols-outlined channel-icon">hearing</span>
+                            <div class="channel-text">
+                                <span class="channel-name">バイノーラルビート (Beats)</span>
+                                <span class="channel-desc">脳をリラックスに導く周波数</span>
+                            </div>
+                        </div>
+                        <div class="slider-container flex-col">
+                            <div class="binaural-controls-row">
+                                <button class="mute-btn" data-channel="binaural" aria-label="Mute Binaural Beats">
+                                    <span class="material-symbols-outlined">volume_up</span>
+                                </button>
+                                <input type="range" min="0" max="1" step="0.01" value="0.0" class="sound-slider" id="slider-binaural" data-channel="binaural">
+                                <span class="volume-value" id="val-binaural">0%</span>
+                            </div>
+                            <div class="beats-selector-group">
+                                <button class="beat-select-btn active" data-freq="6" title="深い瞑想、リラックス、夢見 (Theta)">Theta (6Hz)</button>
+                                <button class="beat-select-btn" data-freq="10" title="穏やかな集中、軽度のリラックス (Alpha)">Alpha (10Hz)</button>
+                                <button class="beat-select-btn" data-freq="3" title="深い睡眠、回復 (Delta)">Delta (3Hz)</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Solfeggio Frequencies Control -->
+                    <div class="mixer-row" id="row-solfeggio">
+                        <div class="channel-info">
+                            <span class="material-symbols-outlined channel-icon">spatial_audio_off</span>
+                            <div class="channel-text">
+                                <span class="channel-name">ソルフェジオ周波数 (Solfeggio)</span>
+                                <span class="channel-desc">心身を整える奇跡の周波数ヒーリング</span>
+                            </div>
+                        </div>
+                        <div class="slider-container flex-col">
+                            <div class="binaural-controls-row">
+                                <button class="mute-btn" data-channel="solfeggio" aria-label="Mute Solfeggio">
+                                    <span class="material-symbols-outlined">volume_up</span>
+                                </button>
+                                <input type="range" min="0" max="1" step="0.01" value="0.0" class="sound-slider" id="slider-solfeggio" data-channel="solfeggio">
+                                <span class="volume-value" id="val-solfeggio">0%</span>
+                            </div>
+                            <div class="beats-selector-group">
+                                <button class="solfeggio-select-btn active" data-freq="528" title="DNA修復・奇跡・愛 (528Hz)">528 Hz (愛・細胞修復)</button>
+                                <button class="solfeggio-select-btn" data-freq="432" title="自然との共鳴・緊張緩和 (432Hz)">432 Hz (自律神経調律)</button>
+                                <button class="solfeggio-select-btn" data-freq="396" title="トラウマ・恐怖・不安の解放 (396Hz)">396 Hz (恐怖解放)</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Deep Brown Noise Control -->
+                    <div class="mixer-row" id="row-brown">
+                        <div class="channel-info">
+                            <span class="material-symbols-outlined channel-icon">filter_hdr</span>
+                            <div class="channel-text">
+                                <span class="channel-name">ディープブラウンノイズ (Brown)</span>
+                                <span class="channel-desc">脳の雑念を消し去る超低域ノイズ</span>
+                            </div>
+                        </div>
+                        <div class="slider-container">
+                            <button class="mute-btn" data-channel="brown" aria-label="Mute Brown Noise">
+                                <span class="material-symbols-outlined">volume_up</span>
+                            </button>
+                            <input type="range" min="0" max="1" step="0.01" value="0.0" class="sound-slider" id="slider-brown" data-channel="brown">
+                            <span class="volume-value" id="val-brown">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- Breathing Guide Control -->
+                    <div class="mixer-row" id="row-breath">
+                        <div class="channel-info">
+                            <span class="material-symbols-outlined channel-icon">self_improvement</span>
+                            <div class="channel-text">
+                                <span class="channel-name">呼吸同調ガイド (Breathing Guide)</span>
+                                <span class="channel-desc">心拍を安定させる呼吸アシスト音源</span>
+                            </div>
+                        </div>
+                        <div class="slider-container flex-col">
+                            <div class="binaural-controls-row">
+                                <button class="mute-btn" data-channel="breath" aria-label="Mute Breathing Guide">
+                                    <span class="material-symbols-outlined">volume_up</span>
+                                </button>
+                                <input type="range" min="0" max="1" step="0.01" value="0.0" class="sound-slider" id="slider-breath" data-channel="breath">
+                                <span class="volume-value" id="val-breath">0%</span>
+                            </div>
+                            <div class="beats-selector-group">
+                                <button class="breath-guide-toggle-btn active" id="breath-visual-toggle" title="画面上に呼吸ガイドサークルを表示します">画面ガイド表示: ON</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Side: Master Control, Timer & Video Recording -->
+            <div class="right-column">
+                <!-- Master Controls & Audio Start -->
+                <section class="control-card control-center">
+                    <div class="play-state-container">
+                        <button id="master-play-btn" class="glowing-play-btn">
+                            <span class="material-symbols-outlined play-icon">play_arrow</span>
+                            <span class="btn-text">オーディオを開始する</span>
+                        </button>
+                        <p class="startup-hint">※ブラウザの音声を有効にするため、ボタンを押して開始してください。</p>
+                    </div>
+                </section>
+
+                <!-- Sleep Timer -->
+                <section class="control-card timer-card">
+                    <h2 class="card-title">
+                        <span class="material-symbols-outlined">hourglass_empty</span>
+                        タイマー設定
+                    </h2>
+                    <div class="timer-selector">
+                        <button class="timer-btn" data-minutes="5">5分</button>
+                        <button class="timer-btn active" data-minutes="15">15分</button>
+                        <button class="timer-btn" data-minutes="30">30分</button>
+                        <button class="timer-btn" data-minutes="60">60分</button>
+                        <button class="timer-btn" data-minutes="infinite">無制限</button>
+                    </div>
+                    <div class="timer-display-container">
+                        <div class="timer-time" id="time-left">15:00</div>
+                        <span class="timer-status-dot" id="timer-status">待機中</span>
+                    </div>
+                </section>
+
+                <!-- Video Recording -->
+                <section class="control-card record-card">
+                    <h2 class="card-title">
+                        <span class="material-symbols-outlined">videocam</span>
+                        ASMR動画レコーダー
+                    </h2>
+                    <p class="record-description">
+                        現在のサウンドミックスとビジュアルを同期させた動画ファイル（WebM/MP4形式）を作成し、ローカルにダウンロードできます。
+                    </p>
+                    <div class="record-settings">
+                        <label for="resolution-select" class="settings-label">解像度:</label>
+                        <select id="resolution-select" class="premium-select">
+                            <option value="1280x720" selected>HD (1280 x 720) - 推奨</option>
+                            <option value="1920x1080">Full HD (1920 x 1080)</option>
+                            <option value="854x480">SD (854 x 480) - 低負荷</option>
+                        </select>
+                    </div>
+                    <div class="record-controls">
+                        <button id="record-btn" class="record-btn" disabled>
+                            <span class="material-symbols-outlined record-icon">fiber_manual_record</span>
+                            <span class="record-btn-text">15分の録画を開始</span>
+                        </button>
+                        <button id="stop-record-btn" class="record-btn stop-btn hidden">
+                            <span class="material-symbols-outlined">stop</span>
+                            <span>録画を停止して保存</span>
+                        </button>
+                    </div>
+                    <div class="progress-bar-container hidden" id="record-progress-container">
+                        <div class="progress-info">
+                            <span id="record-status-text">録画中...</span>
+                            <span id="record-percentage">0%</span>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-fill" id="record-progress-fill"></div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Visualizer Customizer -->
+        <section class="control-card visualizer-settings-card">
+            <h2 class="card-title">
+                <span class="material-symbols-outlined">palette</span>
+                ビジュアル設定
+            </h2>
+            <div class="visualizer-options">
+                <div class="option-group">
+                    <span class="option-label">ビジュアルスタイル:</span>
+                    <div class="visualizer-selector-group">
+                        <button class="visual-style-btn active" data-style="cosmic">Cosmic Orbit (宇宙軌道)</button>
+                        <button class="visual-style-btn" data-style="ripple">Rain Ripple (雨の波紋)</button>
+                        <button class="visual-style-btn" data-style="glow">Glow Wave (光の波形)</button>
+                    </div>
+                </div>
+                <div class="option-group">
+                    <span class="option-label">色彩テーマ:</span>
+                    <div class="theme-selector-group">
+                        <button class="theme-select-btn active" data-theme="cyber" style="background: linear-gradient(135deg, #00f2fe, #4facfe);"></button>
+                        <button class="theme-select-btn" data-theme="sunset" style="background: linear-gradient(135deg, #f093fb, #f5576c);"></button>
+                        <button class="theme-select-btn" data-theme="aurora" style="background: linear-gradient(135deg, #43e97b, #38f9d7);"></button>
+                        <button class="theme-select-btn" data-theme="amber" style="background: linear-gradient(135deg, #f6d365, #fda085);"></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Quick Help/Usage Section -->
+        <footer class="app-footer-info">
+            <h3>使い方</h3>
+            <ol>
+                <li><strong>「オーディオを開始する」</strong>ボタンをクリックして音を有効化します。</li>
+                <li><strong>サウンドミキサー</strong>の各スライダーでお好みの音量（雨、焚き火、波、風、脳波誘導）に調整します。</li>
+                <li><strong>タイマー</strong>で動画にしたい時間（推奨：15分）を選択します。</li>
+                <li><strong>動画レコーダー</strong>の「録画を開始」ボタンをクリックすると、設定時間分の録画がリアルタイムで実行され、終了後に自動的に動画ファイル（`.webm`/`.mp4`）がダウンロードされます。</li>
+            </ol>
+            <p class="note">※録画中はブラウザのタブをアクティブにしたままにしておくことをお勧めします（バックグラウンドにするとブラウザの省電力機能により描画が遅延することがあります）。</p>
+        </footer>
+    </div>
+
+    <!-- Logic Script -->
+    <script>
+    // Cozy ASMR Soundscape Studio & Video Recorder - Logic
+
+    // Global state variables
+    let audioCtx = null;
+    let masterGain = null;
+    let recordDestination = null;
+    let analyser = null;
+    let isPlaying = false;
+    let isRecording = false;
+
+    // Synthesizer nodes structure
+    const synths = {
+        rain: { gainNode: null, sourceNodes: [], volume: 0.5, isMuted: false },
+        fire: { gainNode: null, sourceNodes: [], timerId: null, volume: 0.0, isMuted: false },
+        waves: { gainNode: null, sourceNodes: [], volume: 0.0, isMuted: false },
+        wind: { gainNode: null, sourceNodes: [], volume: 0.0, isMuted: false },
+        binaural: { gainNode: null, leftOsc: null, rightOsc: null, merger: null, freq: 6, volume: 0.0, isMuted: false },
+        solfeggio: { gainNode: null, oscNode: null, lfoNode: null, freq: 528, volume: 0.0, isMuted: false },
+        brown: { gainNode: null, sourceNodes: [], volume: 0.0, isMuted: false },
+        breath: { gainNode: null, oscNode: null, lfoNode: null, volume: 0.0, isMuted: false }
+    };
+
+    // Buffers for synthesizers
+    let pinkNoiseBuffer = null;
+    let brownNoiseBuffer = null;
+
+    // Breathing visual guide state
+    let isBreathingVisualActive = true;
+
+    // Timer state
+    let timerDuration = 15 * 60; // default 15 minutes in seconds
+    let timerRemaining = 15 * 60;
+    let timerIntervalId = null;
+    let isTimerInfinite = false;
+
+    // Recording state
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let recordStartTime = 0;
+    let recordDurationLimit = 15 * 60; // matching timer
+    let recordIntervalId = null;
+
+    // Visualizer configuration
+    const canvas = document.getElementById('visualizer-canvas');
+    const ctx = canvas.getContext('2d');
+    let animationFrameId = null;
+    let visualStyle = 'cosmic'; // cosmic, ripple, glow
+    let activeTheme = 'cyber'; // cyber, sunset, aurora, amber
+    let themeColors = {
+        cyber: ['#00f2fe', '#4facfe'],
+        sunset: ['#f093fb', '#f5576c'],
+        aurora: ['#43e97b', '#38f9d7'],
+        amber: ['#f6d365', '#fda085']
+    };
+
+    // Particles for cosmic visualizer
+    let particles = [];
+    // Ripples for ripple visualizer
+    let ripples = [];
+
+    // Initialize Canvas Size
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // --- 1. PROCEDURAL SOUND SYNTHESIZERS ---
+
+    // Generate Pink Noise using Kellet's refinement of the McCartney-Vos algorithm
+    function createPinkNoiseBuffer(ctxNode, durationSeconds = 12) {
+        const sampleRate = ctxNode.sampleRate;
+        const bufferSize = sampleRate * durationSeconds;
+        const buffer = ctxNode.createBuffer(1, bufferSize, sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+        
+        for (let i = 0; i < bufferSize; i++) {
+            const white = Math.random() * 2 - 1;
+            b0 = 0.99886 * b0 + white * 0.0555179;
+            b1 = 0.99332 * b1 + white * 0.0750759;
+            b2 = 0.96900 * b2 + white * 0.1538520;
+            b3 = 0.86650 * b3 + white * 0.3104856;
+            b4 = 0.55000 * b4 + white * 0.5329522;
+            b5 = -0.7616 * b5 - white * 0.0168980;
+            
+            data[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+            data[i] *= 0.11; // scale down to avoid clipping
+            b6 = white * 0.115926;
+        }
+        
+        return buffer;
+    }
+
+    // Start Rain Synthesizer
+    function startRain() {
+        // 1. Continuous pink noise for background rain hiss
+        const noiseNode = audioCtx.createBufferSource();
+        noiseNode.buffer = pinkNoiseBuffer;
+        noiseNode.loop = true;
+        
+        // Filter to shape rain sound (mellow mid-highs)
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(1000, audioCtx.currentTime);
+        filter.Q.setValueAtTime(1.0, audioCtx.currentTime);
+        
+        // Connect rain background
+        noiseNode.connect(filter);
+        filter.connect(synths.rain.gainNode);
+        noiseNode.start();
+        synths.rain.sourceNodes.push(noiseNode);
+
+        // 2. Schedule sporadic raindrop splatters
+        // We create transient high-pass filtered crackles for individual droplets hitting glass
+        const dropletInterval = setInterval(() => {
+            if (!isPlaying || synths.rain.isMuted || synths.rain.volume === 0) return;
+            
+            // Spawn a droplet
+            const osc = audioCtx.createOscillator();
+            const dropGain = audioCtx.createGain();
+            const dropFilter = audioCtx.createBiquadFilter();
+            
+            osc.type = 'sine';
+            // Random frequency between 1200 and 1800Hz
+            osc.frequency.setValueAtTime(1200 + Math.random() * 600, audioCtx.currentTime);
+            
+            dropFilter.type = 'highpass';
+            dropFilter.frequency.setValueAtTime(2000, audioCtx.currentTime);
+            
+            // Quick decay envelope
+            const now = audioCtx.currentTime;
+            const volumeScale = 0.05 + Math.random() * 0.08;
+            dropGain.gain.setValueAtTime(0, now);
+            dropGain.gain.linearRampToValueAtTime(volumeScale, now + 0.002);
+            dropGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.03 + Math.random() * 0.05);
+            
+            osc.connect(dropFilter);
+            dropFilter.connect(dropGain);
+            dropGain.connect(synths.rain.gainNode);
+            
+            osc.start(now);
+            osc.stop(now + 0.1);
+        }, 150); // density of rain droplets
+
+        synths.rain.dropletIntervalId = dropletInterval;
+    }
+
+    // Start Campfire Synthesizer
+    function startCampfire() {
+        // 1. Cozy deep rumble (flames)
+        const fireRumble = audioCtx.createBufferSource();
+        fireRumble.buffer = pinkNoiseBuffer;
+        fireRumble.loop = true;
+        
+        const lowpass = audioCtx.createBiquadFilter();
+        lowpass.type = 'lowpass';
+        lowpass.frequency.setValueAtTime(180, audioCtx.currentTime); // fuller deep rumble
+        
+        // Slow LFO to modulate the fire flame size (gain modulation)
+        const fireLFO = audioCtx.createOscillator();
+        fireLFO.frequency.setValueAtTime(0.3, audioCtx.currentTime); // 0.3 Hz
+        const lfoGain = audioCtx.createGain();
+        lfoGain.gain.setValueAtTime(0.3, audioCtx.currentTime); // wider flame fluctuations
+        
+        const rumbleGain = audioCtx.createGain();
+        rumbleGain.gain.setValueAtTime(1.5, audioCtx.currentTime); // significantly louder base rumble
+        
+        fireLFO.connect(lfoGain);
+        lfoGain.connect(rumbleGain.gain); // Modulate rumble volume
+        
+        fireRumble.connect(lowpass);
+        lowpass.connect(rumbleGain);
+        rumbleGain.connect(synths.fire.gainNode);
+        
+        fireLFO.start();
+        fireRumble.start();
+        synths.fire.sourceNodes.push(fireRumble, fireLFO);
+
+        // 2. Fire Crackling & Pops using dynamic timers
+        // Scheduling short impulses in random intervals
+        function scheduleCrackle() {
+            if (!isPlaying) return;
+            
+            const delay = 50 + Math.random() * 600; // random interval
+            synths.fire.timerId = setTimeout(() => {
+                if (isPlaying && !synths.fire.isMuted && synths.fire.volume > 0) {
+                    const now = audioCtx.currentTime;
+                    
+                    // Create crackle (short high-passed noise burst)
+                    const crackleSource = audioCtx.createBufferSource();
+                    crackleSource.buffer = pinkNoiseBuffer;
+                    
+                    const crackleFilter = audioCtx.createBiquadFilter();
+                    crackleFilter.type = 'highpass';
+                    crackleFilter.frequency.setValueAtTime(2500 + Math.random() * 3000, now);
+                    crackleFilter.Q.setValueAtTime(2.0, now);
+                    
+                    const crackleGain = audioCtx.createGain();
+                    const intensity = 0.15 + Math.random() * 0.45; // louder, crisper pops
+                    
+                    // Very sharp spike envelope
+                    crackleGain.gain.setValueAtTime(0, now);
+                    crackleGain.gain.linearRampToValueAtTime(intensity, now + 0.001);
+                    crackleGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.005 + Math.random() * 0.015);
+                    
+                    crackleSource.connect(crackleFilter);
+                    crackleFilter.connect(crackleGain);
+                    crackleGain.connect(synths.fire.gainNode);
+                    
+                    // Start at a random offset in the noise buffer to avoid repeating
+                    const offset = Math.random() * 8;
+                    crackleSource.start(now, offset, 0.05);
+                }
+                scheduleCrackle(); // Loop recursively
+            }, delay);
+        }
+        
+        scheduleCrackle();
+    }
+
+    // Start Ocean Waves Synthesizer
+    function startOceanWaves() {
+        // Continuous deep ocean sound
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = pinkNoiseBuffer;
+        noise.loop = true;
+        
+        // Variable filter that opens and closes simulating wave movement
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(250, audioCtx.currentTime);
+        
+        // Wave flow controller (LFO)
+        const waveLFO = audioCtx.createOscillator();
+        waveLFO.type = 'sine';
+        waveLFO.frequency.setValueAtTime(0.08, audioCtx.currentTime); // ~12.5 seconds per wave cycle
+        
+        // Modulate volume
+        const volumeMod = audioCtx.createGain();
+        volumeMod.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        const lfoVolumeGain = audioCtx.createGain();
+        lfoVolumeGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+        
+        // Modulate cutoff frequency
+        const filterModGain = audioCtx.createGain();
+        filterModGain.gain.setValueAtTime(220, audioCtx.currentTime); // oscillate by 220Hz
+        
+        // Connections
+        waveLFO.connect(lfoVolumeGain);
+        lfoVolumeGain.connect(volumeMod.gain);
+        
+        waveLFO.connect(filterModGain);
+        filterModGain.connect(filter.frequency); // Modulate cutoff frequency (waves brighter as they come in)
+        
+        noise.connect(filter);
+        filter.connect(volumeMod);
+        volumeMod.connect(synths.waves.gainNode);
+        
+        waveLFO.start();
+        noise.start();
+        
+        synths.waves.sourceNodes.push(noise, waveLFO);
+    }
+
+    // Start Wind Synthesizer
+    function startWind() {
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = pinkNoiseBuffer;
+        noise.loop = true;
+        
+        // High Q Bandpass filter to isolate rustling wind sound
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.Q.setValueAtTime(5.0, audioCtx.currentTime); // focused sweep
+        filter.frequency.setValueAtTime(450, audioCtx.currentTime);
+        
+        // Wind gust modulation (Slow random walk simulated by LFO)
+        const windLFO = audioCtx.createOscillator();
+        windLFO.frequency.setValueAtTime(0.05, audioCtx.currentTime); // ~20 seconds per cycle
+        
+        const windLFOGain = audioCtx.createGain();
+        windLFOGain.gain.setValueAtTime(180, audioCtx.currentTime); // sweep filter up/down by 180Hz
+        
+        // Extra amplitude modulation to match gusts
+        const windVolumeLFO = audioCtx.createOscillator();
+        windVolumeLFO.frequency.setValueAtTime(0.12, audioCtx.currentTime);
+        const windVolGain = audioCtx.createGain();
+        windVolGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+        
+        const amplitudeModNode = audioCtx.createGain();
+        amplitudeModNode.gain.setValueAtTime(0.6, audioCtx.currentTime);
+        
+        windLFO.connect(windLFOGain);
+        windLFOGain.connect(filter.frequency);
+        
+        windVolumeLFO.connect(windVolGain);
+        windVolGain.connect(amplitudeModNode.gain);
+        
+        noise.connect(filter);
+        filter.connect(amplitudeModNode);
+        amplitudeModNode.connect(synths.wind.gainNode);
+        
+        windLFO.start();
+        windVolumeLFO.start();
+        noise.start();
+        
+        synths.wind.sourceNodes.push(noise, windLFO, windVolumeLFO);
+    }
+
+    // Start Binaural Beats Synthesizer (requires stereo routing)
+    function startBinauralBeats() {
+        const now = audioCtx.currentTime;
+        
+        // Base frequency (warm carrier tone)
+        const baseFreq = 140; // Hz (gives a nice deep relaxing drone)
+        const beatFreq = synths.binaural.freq; // e.g., 6Hz (Theta)
+        
+        // Create oscillators for left and right ears
+        const oscLeft = audioCtx.createOscillator();
+        oscLeft.type = 'sine';
+        oscLeft.frequency.setValueAtTime(baseFreq, now);
+        
+        const oscRight = audioCtx.createOscillator();
+        oscRight.type = 'sine';
+        oscRight.frequency.setValueAtTime(baseFreq + beatFreq, now);
+        
+        // Create stereo merger
+        const merger = audioCtx.createChannelMerger(2);
+        
+        // Route Left oscillator to Left channel (0), Right oscillator to Right channel (1)
+        oscLeft.connect(merger, 0, 0);
+        oscRight.connect(merger, 0, 1);
+        
+        // Connect merger to channel gain
+        merger.connect(synths.binaural.gainNode);
+        
+        oscLeft.start(now);
+        oscRight.start(now);
+        
+        synths.binaural.leftOsc = oscLeft;
+        synths.binaural.rightOsc = oscRight;
+        synths.binaural.merger = merger;
+    }
+
+    // Stop Binaural Beats
+    function stopBinauralBeats() {
+        if (synths.binaural.leftOsc) {
+            try { synths.binaural.leftOsc.stop(); } catch(e){}
+            synths.binaural.leftOsc.disconnect();
+            synths.binaural.leftOsc = null;
+        }
+        if (synths.binaural.rightOsc) {
+            try { synths.binaural.rightOsc.stop(); } catch(e){}
+            synths.binaural.rightOsc.disconnect();
+            synths.binaural.rightOsc = null;
+        }
+        if (synths.binaural.merger) {
+            synths.binaural.merger.disconnect();
+            synths.binaural.merger = null;
+        }
+    }
+
+    // Update Binaural Beat Frequency
+    function updateBinauralFrequency(freq) {
+        synths.binaural.freq = freq;
+        if (isPlaying && synths.binaural.leftOsc && synths.binaural.rightOsc) {
+            const now = audioCtx.currentTime;
+            const baseFreq = 140;
+            synths.binaural.rightOsc.frequency.setValueAtTime(baseFreq + freq, now);
+        }
+    }
+
+    // Start Solfeggio Frequencies Synthesizer
+    function startSolfeggio() {
+        const now = audioCtx.currentTime;
+        
+        // Create sine wave oscillator
+        const osc = audioCtx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(synths.solfeggio.freq, now);
+        
+        // Create LFO to modulate volume slowly (bell / bowl breathing swell)
+        // Period: 8.3s (0.12 Hz)
+        const lfo = audioCtx.createOscillator();
+        lfo.type = 'sine';
+        lfo.frequency.setValueAtTime(0.12, now);
+        
+        const lfoGain = audioCtx.createGain();
+        lfoGain.gain.setValueAtTime(0.35, now); // amplitude swing
+        
+        const swellGain = audioCtx.createGain();
+        swellGain.gain.setValueAtTime(0.65, now); // offset
+        
+        lfo.connect(lfoGain);
+        lfoGain.connect(swellGain.gain);
+        
+        osc.connect(swellGain);
+        swellGain.connect(synths.solfeggio.gainNode);
+        
+        osc.start(now);
+        lfo.start(now);
+        
+        synths.solfeggio.oscNode = osc;
+        synths.solfeggio.lfoNode = lfo;
+    }
+
+    // Stop Solfeggio
+    function stopSolfeggio() {
+        if (synths.solfeggio.oscNode) {
+            try { synths.solfeggio.oscNode.stop(); } catch(e){}
+            synths.solfeggio.oscNode.disconnect();
+            synths.solfeggio.oscNode = null;
+        }
+        if (synths.solfeggio.lfoNode) {
+            try { synths.solfeggio.lfoNode.stop(); } catch(e){}
+            synths.solfeggio.lfoNode.disconnect();
+            synths.solfeggio.lfoNode = null;
+        }
+    }
+
+    // Update Solfeggio Frequency
+    function updateSolfeggioFrequency(freq) {
+        synths.solfeggio.freq = freq;
+        if (isPlaying && synths.solfeggio.oscNode) {
+            const now = audioCtx.currentTime;
+            synths.solfeggio.oscNode.frequency.setValueAtTime(synths.solfeggio.oscNode.frequency.value, now);
+            synths.solfeggio.oscNode.frequency.exponentialRampToValueAtTime(freq, now + 0.6);
+        }
+    }
+
+    // Generate Brown Noise using a running accumulator algorithm (-6dB/octave roll-off)
+    function createBrownNoiseBuffer(ctxNode, durationSeconds = 12) {
+        const sampleRate = ctxNode.sampleRate;
+        const bufferSize = sampleRate * durationSeconds;
+        const buffer = ctxNode.createBuffer(1, bufferSize, sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        let lastOut = 0.0;
+        
+        for (let i = 0; i < bufferSize; i++) {
+            const white = Math.random() * 2 - 1;
+            data[i] = (lastOut + (0.02 * white)) / 1.02;
+            lastOut = data[i];
+            data[i] *= 3.5; // restore volume loss
+        }
+        
+        return buffer;
+    }
+
+    // Start Deep Brown Noise
+    function startBrown() {
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = brownNoiseBuffer;
+        noise.loop = true;
+        
+        // Mellow lowpass filter (cutting higher frequencies for a deep warm hum)
+        const lowpass = audioCtx.createBiquadFilter();
+        lowpass.type = 'lowpass';
+        lowpass.frequency.setValueAtTime(180, audioCtx.currentTime);
+        
+        noise.connect(lowpass);
+        lowpass.connect(synths.brown.gainNode);
+        noise.start();
+        synths.brown.sourceNodes.push(noise);
+    }
+
+    // Start Breathing Guided Calming Pad
+    function startBreath() {
+        const now = audioCtx.currentTime;
+        
+        // Calming warm interval (A2 = 110Hz, E3 = 165Hz)
+        const osc1 = audioCtx.createOscillator();
+        osc1.type = 'triangle';
+        osc1.frequency.setValueAtTime(110, now);
+        
+        const osc2 = audioCtx.createOscillator();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(165, now);
+        
+        // Smooth lowpass filter
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(140, now);
+        
+        // 8-second breathing LFO: 0.125Hz
+        const breathLFO = audioCtx.createOscillator();
+        breathLFO.type = 'triangle';
+        breathLFO.frequency.setValueAtTime(0.125, now);
+        
+        // Modulate volume matching inhalation and exhalation
+        const lfoGain = audioCtx.createGain();
+        lfoGain.gain.setValueAtTime(0.35, now); // swing
+        
+        const breathGain = audioCtx.createGain();
+        breathGain.gain.setValueAtTime(0.45, now); // base offset
+        
+        // Modulate filter cutoff (making it brighter on inhale)
+        const lfoFilterGain = audioCtx.createGain();
+        lfoFilterGain.gain.setValueAtTime(110, now);
+        
+        // Connections
+        breathLFO.connect(lfoGain);
+        lfoGain.connect(breathGain.gain);
+        
+        breathLFO.connect(lfoFilterGain);
+        lfoFilterGain.connect(filter.frequency);
+        
+        osc1.connect(filter);
+        osc2.connect(filter);
+        filter.connect(breathGain);
+        breathGain.connect(synths.breath.gainNode);
+        
+        osc1.start(now);
+        osc2.start(now);
+        breathLFO.start(now);
+        
+        synths.breath.oscNode = [osc1, osc2, breathLFO];
+    }
+
+    // Stop Breathing Guide
+    function stopBreath() {
+        if (synths.breath.oscNode) {
+            synths.breath.oscNode.forEach(node => {
+                try { node.stop(); } catch(e){}
+                node.disconnect();
+            });
+            synths.breath.oscNode = null;
+        }
+    }
+
+    // Stop all sound sources
+    function stopAllSynthesizers() {
+        // Clear rain droplet interval
+        if (synths.rain.dropletIntervalId) {
+            clearInterval(synths.rain.dropletIntervalId);
+            synths.rain.dropletIntervalId = null;
+        }
+        
+        // Clear campfire crackle timeout
+        if (synths.fire.timerId) {
+            clearTimeout(synths.fire.timerId);
+            synths.fire.timerId = null;
+        }
+        
+        // Stop all buffer sources and LFOs
+        Object.keys(synths).forEach(key => {
+            if (key === 'binaural') {
+                stopBinauralBeats();
+            } else if (key === 'solfeggio') {
+                stopSolfeggio();
+            } else if (key === 'breath') {
+                stopBreath();
+            } else {
+                synths[key].sourceNodes.forEach(node => {
+                    try {
+                        node.stop();
+                    } catch(e) {}
+                    node.disconnect();
+                });
+                synths[key].sourceNodes = [];
+            }
+        });
+    }
+
+    // Initialize audio context and synthesis routing
+    function initAudio() {
+        if (audioCtx) return;
+        
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContextClass();
+        
+        // Master Gain Node
+        masterGain = audioCtx.createGain();
+        masterGain.gain.setValueAtTime(0.8, audioCtx.currentTime); // general master volume
+        
+        // Analyser Node for Visualizer
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 512;
+        analyser.smoothingTimeConstant = 0.85;
+        
+        // Media Stream Destination for Video Recording (pristine digital audio capture)
+        recordDestination = audioCtx.createMediaStreamDestination();
+        
+        // Connect Master Gain to hardware output and recording output
+        masterGain.connect(audioCtx.destination);
+        masterGain.connect(analyser);
+        masterGain.connect(recordDestination);
+        
+        // Generate reusable noise buffers (12s loop seamlessly)
+        pinkNoiseBuffer = createPinkNoiseBuffer(audioCtx, 12);
+        brownNoiseBuffer = createBrownNoiseBuffer(audioCtx, 12);
+        
+        // Set up channel gains
+        Object.keys(synths).forEach(key => {
+            const gainNode = audioCtx.createGain();
+            // Set initial volumes based on sliders
+            const initialVol = synths[key].isMuted ? 0 : synths[key].volume;
+            gainNode.gain.setValueAtTime(initialVol, audioCtx.currentTime);
+            gainNode.connect(masterGain);
+            synths[key].gainNode = gainNode;
+        });
+    }
+
+    // Toggle audio state
+    function toggleAudio() {
+        if (!isPlaying) {
+            // Start playing
+            initAudio();
+            
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            
+            isPlaying = true;
+            
+            // Start synthesizers
+            startRain();
+            startCampfire();
+            startOceanWaves();
+            startWind();
+            startBinauralBeats();
+            startSolfeggio();
+            startBrown();
+            startBreath();
+            
+            // Update UI Button
+            const playBtn = document.getElementById('master-play-btn');
+            playBtn.classList.add('playing');
+            playBtn.querySelector('.play-icon').textContent = 'pause';
+            playBtn.querySelector('.btn-text').textContent = 'オーディオを一時停止';
+            
+            // Start Timer
+            startTimer();
+            
+            // Enable Video Record Button
+            document.getElementById('record-btn').disabled = false;
+            
+            // Animation Loop
+            animate();
+        } else {
+            // Pause playing
+            isPlaying = false;
+            
+            // Stop audio generators (preserve settings)
+            stopAllSynthesizers();
+            
+            // Update UI Button
+            const playBtn = document.getElementById('master-play-btn');
+            playBtn.classList.remove('playing');
+            playBtn.querySelector('.play-icon').textContent = 'play_arrow';
+            playBtn.querySelector('.btn-text').textContent = 'オーディオを開始する';
+            
+            // Pause Timer
+            pauseTimer();
+            
+            // Disable Record Button if not recording
+            if (!isRecording) {
+                document.getElementById('record-btn').disabled = true;
+            }
+        }
+    }
+
+    // Fade out audio gracefully (used when timer finishes)
+    function fadeOutAndStop(duration = 8) {
+        if (!audioCtx || !isPlaying) return;
+        
+        const now = audioCtx.currentTime;
+        // Ramp master volume down to zero smoothly
+        masterGain.gain.setValueAtTime(masterGain.gain.value, now);
+        masterGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+        
+        setTimeout(() => {
+            if (isPlaying) {
+                toggleAudio(); // turns off
+                // Restore master volume level
+                masterGain.gain.setValueAtTime(0.8, audioCtx.currentTime);
+            }
+        }, duration * 1000);
+    }
+
+    // --- 2. HTML5 CANVAS AUDIO VISUALIZER ---
+
+    // Particles for Cosmic Style
+    class Particle {
+        constructor() {
+            this.reset();
+        }
+        
+        reset() {
+            this.angle = Math.random() * Math.PI * 2;
+            this.distance = 100 + Math.random() * 250;
+            this.speed = 0.002 + Math.random() * 0.005;
+            this.size = 1 + Math.random() * 3;
+            this.alpha = 0.1 + Math.random() * 0.5;
+            this.baseSize = this.size;
+        }
+        
+        update(bassIntensity, trebleIntensity) {
+            this.angle += this.speed * (1 + bassIntensity * 2);
+            this.size = this.baseSize * (1 + trebleIntensity * 1.5);
+        }
+        
+        draw(cx, cy, color1, color2) {
+            const x = cx + Math.cos(this.angle) * this.distance;
+            const y = cy + Math.sin(this.angle) * this.distance;
+            
+            ctx.save();
+            ctx.globalAlpha = this.alpha;
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = color1;
+            ctx.fillStyle = color2;
+            ctx.beginPath();
+            ctx.arc(x, y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+    }
+
+    // Initialize particles
+    function initParticles() {
+        particles = [];
+        for (let i = 0; i < 80; i++) {
+            particles.push(new Particle());
+        }
+    }
+    initParticles();
+
+    // Animation draw function
+    function animate() {
+        if (!isPlaying && !isRecording) {
+            // Clear canvas and draw static subtle backdrop
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            return;
+        }
+        
+        animationFrameId = requestAnimationFrame(animate);
+        
+        // Set colors based on active theme
+        const activeColorArray = themeColors[activeTheme] || themeColors.cyber;
+        const color1 = activeColorArray[0];
+        const color2 = activeColorArray[1];
+        
+        // Clear canvas with a very transparent layer to create motion blur trail
+        ctx.fillStyle = 'rgba(7, 11, 25, 0.15)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        
+        // Default fallback values if Analyser isn't started yet
+        let bassIntensity = 0;
+        let trebleIntensity = 0;
+        let dataArray = new Uint8Array(256);
+        
+        if (analyser) {
+            const bufferLength = analyser.frequencyBinCount;
+            dataArray = new Uint8Array(bufferLength);
+            analyser.getByteFrequencyData(dataArray);
+            
+            // Calculate average frequencies for visuals
+            let bassSum = 0;
+            let trebleSum = 0;
+            
+            for (let i = 0; i < 20; i++) bassSum += dataArray[i]; // Lows
+            for (let i = 120; i < 200; i++) trebleSum += dataArray[i]; // Highs
+            
+            bassIntensity = (bassSum / 20) / 255;
+            trebleIntensity = (trebleSum / 80) / 255;
+        }
+        
+        // Draw visual styles
+        if (visualStyle === 'cosmic') {
+            // --- STYLE 1: COSMIC ORBIT ---
+            // Center breathing sun
+            const sunRadius = 80 + bassIntensity * 40;
+            const gradient = ctx.createRadialGradient(cx, cy, sunRadius * 0.2, cx, cy, sunRadius);
+            gradient.addColorStop(0, '#ffffff');
+            gradient.addColorStop(0.3, color1);
+            gradient.addColorStop(0.8, color2 + '33');
+            gradient.addColorStop(1, 'transparent');
+            
+            ctx.save();
+            ctx.shadowBlur = 30 + bassIntensity * 20;
+            ctx.shadowColor = color1;
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(cx, cy, sunRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            
+            // Draw and update orbit particles
+            particles.forEach(p => {
+                p.update(bassIntensity, trebleIntensity);
+                p.draw(cx, cy, color1, color2);
+            });
+            
+        } else if (visualStyle === 'ripple') {
+            // --- STYLE 2: RAIN RIPPLE ---
+            // Spawn ripple periodically based on audio transients
+            if (bassIntensity > 0.35 && Math.random() < 0.15) {
+                ripples.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: 5,
+                    maxRadius: 80 + bassIntensity * 120,
+                    alpha: 0.8,
+                    speed: 1.5 + bassIntensity * 2
+                });
+            }
+            
+            // Limit ripples count to prevent performance drag
+            if (ripples.length > 30) ripples.shift();
+            
+            // Draw ripples
+            ctx.lineWidth = 2;
+            ripples.forEach((r, idx) => {
+                r.radius += r.speed;
+                r.alpha = 1 - (r.radius / r.maxRadius);
+                
+                if (r.alpha > 0) {
+                    ctx.save();
+                    ctx.strokeStyle = color1;
+                    ctx.globalAlpha = r.alpha;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = color2;
+                    ctx.beginPath();
+                    ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.restore();
+                } else {
+                    ripples.splice(idx, 1);
+                }
+            });
+            
+        } else if (visualStyle === 'glow') {
+            // --- STYLE 3: GLOW WAVE ---
+            // Center glowing frequency spectrum wave
+            ctx.save();
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = color1;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = color2;
+            ctx.beginPath();
+            
+            const count = 40;
+            const width = canvas.width / count;
+            
+            for (let i = 0; i <= count; i++) {
+                // Map index to radial coordinates around a circle or a flat wave
+                const index = Math.floor((i / count) * (dataArray.length / 2));
+                const amplitude = (dataArray[index] / 255) * 120 * (0.3 + bassIntensity);
+                const x = i * (canvas.width / count);
+                const y = cy + Math.sin(i * 0.2 + Date.now() * 0.003) * 30 + (i % 2 === 0 ? amplitude : -amplitude);
+                
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            
+            ctx.stroke();
+            ctx.restore();
+        }
+        
+        // Draw Breathing Visual Guide if enabled
+        if (isBreathingVisualActive) {
+            const time = audioCtx ? audioCtx.currentTime : (Date.now() / 1000);
+            const cycleTime = time % 8; // 8-second cycle
+            const isInhale = cycleTime < 4;
+            // Triangle factor from 0 to 1
+            const factor = isInhale ? (cycleTime / 4) : (2 - (cycleTime / 4));
+            
+            const radius = 80 + factor * 100; // dynamic radius 80px to 180px
+            
+            ctx.save();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+            ctx.lineWidth = 3;
+            ctx.shadowBlur = 15 + factor * 15;
+            ctx.shadowColor = color1;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            const radialGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+            radialGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+            radialGrad.addColorStop(0.7, 'rgba(0, 0, 0, 0)');
+            radialGrad.addColorStop(1, color1 + '1a'); // subtle glowing edge
+            ctx.fillStyle = radialGrad;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+            ctx.font = "normal 400 16px 'Outfit', 'Noto Sans JP'";
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // Soft opacity transitions at phase changes
+            const textAlpha = Math.min(1, (cycleTime % 4) * 2.5, (4 - (cycleTime % 4)) * 2.5);
+            ctx.globalAlpha = textAlpha;
+            
+            if (isInhale) {
+                ctx.fillText("息を吸って (Inhale)", cx, cy);
+            } else {
+                ctx.fillText("息を吐いて (Exhale)", cx, cy);
+            }
+            ctx.restore();
+        }
+    }
+
+    // --- 3. SLEEP TIMER LOGIC ---
+
+    // Start timer count
+    function startTimer() {
+        if (isTimerInfinite) {
+            document.getElementById('timer-status').textContent = '再生中';
+            document.getElementById('timer-status').classList.add('active');
+            return;
+        }
+        
+        document.getElementById('timer-status').textContent = '計測中';
+        document.getElementById('timer-status').classList.add('active');
+        
+        if (timerIntervalId) clearInterval(timerIntervalId);
+        
+        timerIntervalId = setInterval(() => {
+            timerRemaining--;
+            updateTimerDisplay();
+            
+            if (timerRemaining <= 0) {
+                clearInterval(timerIntervalId);
+                timerIntervalId = null;
+                document.getElementById('timer-status').textContent = '時間終了';
+                document.getElementById('timer-status').classList.remove('active');
+                
+                // Trigger fade out and stop
+                fadeOutAndStop(8);
+            }
+        }, 1000);
+    }
+
+    // Pause timer count
+    function pauseTimer() {
+        if (timerIntervalId) {
+            clearInterval(timerIntervalId);
+            timerIntervalId = null;
+        }
+        document.getElementById('timer-status').textContent = '一時停止中';
+        document.getElementById('timer-status').classList.remove('active');
+    }
+
+    // Reset timer
+    function resetTimer() {
+        if (timerIntervalId) clearInterval(timerIntervalId);
+        timerRemaining = timerDuration;
+        updateTimerDisplay();
+    }
+
+    // Update countdown UI
+    function updateTimerDisplay() {
+        if (isTimerInfinite) {
+            document.getElementById('time-left').textContent = '∞';
+            return;
+        }
+        
+        const mins = Math.floor(timerRemaining / 60);
+        const secs = timerRemaining % 60;
+        
+        const minsStr = String(mins).padStart(2, '0');
+        const secsStr = String(secs).padStart(2, '0');
+        
+        document.getElementById('time-left').textContent = `${minsStr}:${secsStr}`;
+    }
+
+    // --- 4. VIDEO & AUDIO RECORDING ENGINE ---
+
+    // Start Video Recording
+    function startRecording() {
+        if (isRecording) return;
+        
+        initAudio();
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        
+        // Ensure sound is active
+        if (!isPlaying) {
+            toggleAudio();
+        }
+        
+        // Get target resolution from selector
+        const resolutionSelect = document.getElementById('resolution-select');
+        const [targetWidth, targetHeight] = resolutionSelect.value.split('x').map(Number);
+        
+        // Disable automatic screen resizing and lock canvas to recording dimensions
+        window.removeEventListener('resize', resizeCanvas);
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        
+        // Set recording duration limit matching current timer (unless infinite, which defaults to 15m)
+        recordDurationLimit = isTimerInfinite ? 15 * 60 : timerDuration;
+        recordedChunks = [];
+        
+        // Prepare video stream from Canvas at 30 fps
+        const canvasStream = canvas.captureStream(30);
+        
+        // Prepare pristine audio stream from Web Audio destination node
+        const audioStream = recordDestination.stream;
+        
+        // Merge Video and Audio tracks into one stream
+        const combinedStream = new MediaStream([
+            ...canvasStream.getVideoTracks(),
+            ...audioStream.getAudioTracks()
+        ]);
+        
+        // Check supported MIME type
+        const mimeTypes = [
+            'video/webm;codecs=vp9,opus',
+            'video/webm;codecs=vp8,opus',
+            'video/webm',
+            'video/mp4;codecs=h264,aac',
+            'video/mp4'
+        ];
+        
+        let chosenMimeType = '';
+        for (const mime of mimeTypes) {
+            if (MediaRecorder.isTypeSupported(mime)) {
+                chosenMimeType = mime;
+                break;
+            }
+        }
+        
+        const options = { mimeType: chosenMimeType };
+        if (chosenMimeType.includes('codecs=')) {
+            options.videoBitsPerSecond = 2500000; // 2.5 Mbps for clean HD video
+        }
+        
+        try {
+            mediaRecorder = new MediaRecorder(combinedStream, options);
+        } catch(e) {
+            console.error("MediaRecorder initialization failed, using default:", e);
+            mediaRecorder = new MediaRecorder(combinedStream); // fallback
+        }
+        
+        mediaRecorder.ondataavailable = (event) => {
+            if (event.data && event.data.size > 0) {
+                recordedChunks.push(event.data);
+            }
+        };
+        
+        mediaRecorder.onstop = () => {
+            saveRecording();
+        };
+        
+        // Start Recording (collect in chunks of 1 sec)
+        mediaRecorder.start(1000);
+        isRecording = true;
+        recordStartTime = Date.now();
+        
+        // Update UI
+        const recordBtn = document.getElementById('record-btn');
+        recordBtn.classList.add('recording');
+        recordBtn.querySelector('.record-btn-text').textContent = '録画中...';
+        
+        document.getElementById('record-btn').classList.add('hidden');
+        document.getElementById('stop-record-btn').classList.remove('hidden');
+        
+        document.getElementById('record-progress-container').classList.remove('hidden');
+        document.getElementById('record-status-text').textContent = 'ASMR録画中...';
+        document.getElementById('record-progress-fill').style.width = '0%';
+        document.getElementById('record-percentage').textContent = '0%';
+        
+        // Interval to track recording progress
+        if (recordIntervalId) clearInterval(recordIntervalId);
+        recordIntervalId = setInterval(() => {
+            const elapsed = (Date.now() - recordStartTime) / 1000;
+            let percent = (elapsed / recordDurationLimit) * 100;
+            if (percent > 100) percent = 100;
+            
+            document.getElementById('record-progress-fill').style.width = `${percent}%`;
+            document.getElementById('record-percentage').textContent = `${Math.floor(percent)}%`;
+            
+            // Auto-stop when limit reached
+            if (elapsed >= recordDurationLimit) {
+                stopRecording();
+            }
+        }, 1000);
+    }
+
+    // Stop Video Recording
+    function stopRecording() {
+        if (!isRecording) return;
+        
+        isRecording = false;
+        if (recordIntervalId) {
+            clearInterval(recordIntervalId);
+            recordIntervalId = null;
+        }
+        
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+        }
+        
+        // Re-enable screen scaling and resize canvas back to screen bounds
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        
+        // Reset UI
+        const recordBtn = document.getElementById('record-btn');
+        recordBtn.classList.remove('recording');
+        
+        const minutesVal = isTimerInfinite ? 15 : Math.floor(timerDuration / 60);
+        recordBtn.querySelector('.record-btn-text').textContent = `${minutesVal}分の録画を開始`;
+        
+        document.getElementById('record-btn').classList.remove('hidden');
+        document.getElementById('stop-record-btn').classList.add('hidden');
+        
+        document.getElementById('record-status-text').textContent = '動画を作成・保存中...';
+    }
+
+    // Save recorded chunks as video file
+    function saveRecording() {
+        if (recordedChunks.length === 0) {
+            document.getElementById('record-progress-container').classList.add('hidden');
+            return;
+        }
+        
+        // Determine extension based on MimeType
+        let extension = 'webm';
+        if (mediaRecorder.mimeType.includes('mp4')) {
+            extension = 'mp4';
+        }
+        
+        const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType });
+        const url = URL.createObjectURL(blob);
+        
+        // Create temp link to download
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = `aura-asmr-${Date.now()}.${extension}`;
+        document.body.appendChild(a);
+        a.click();
+        
+        setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            document.getElementById('record-progress-container').classList.add('hidden');
+        }, 100);
+    }
+
+    // --- 5. BROWSER EVENT LISTENERS & MIXER CONTROLS ---
+
+    // Sound volume sliders and mute buttons logic
+    document.querySelectorAll('.sound-slider').forEach(slider => {
+        slider.addEventListener('input', (e) => {
+            const channel = e.target.dataset.channel;
+            const volume = parseFloat(e.target.value);
+            synths[channel].volume = volume;
+            
+            // Update volume value percentage display
+            const percentage = Math.round(volume * 100);
+            document.getElementById(`val-${channel}`).textContent = `${percentage}%`;
+            
+            // Update mixer row visual highlight state
+            const mixerRow = document.getElementById(`row-${channel}`);
+            if (volume > 0 && !synths[channel].isMuted) {
+                mixerRow.classList.add('active');
+            } else {
+                mixerRow.classList.remove('active');
+            }
+            
+            // Update active Web Audio node gain
+            if (isPlaying && synths[channel].gainNode) {
+                const now = audioCtx.currentTime;
+                if (!synths[channel].isMuted) {
+                    // smooth linear sweep to prevent pops
+                    synths[channel].gainNode.gain.setValueAtTime(synths[channel].gainNode.gain.value, now);
+                    synths[channel].gainNode.gain.linearRampToValueAtTime(volume, now + 0.1);
+                }
+            }
+        });
+    });
+
+    document.querySelectorAll('.mute-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const channel = btn.dataset.channel;
+            const isMuted = !synths[channel].isMuted;
+            synths[channel].isMuted = isMuted;
+            
+            const iconSpan = btn.querySelector('span');
+            const mixerRow = document.getElementById(`row-${channel}`);
+            const slider = document.getElementById(`slider-${channel}`);
+            
+            if (isMuted) {
+                btn.classList.add('muted');
+                iconSpan.textContent = 'volume_off';
+                mixerRow.classList.remove('active');
+                
+                // Set volume node to 0
+                if (isPlaying && synths[channel].gainNode) {
+                    synths[channel].gainNode.gain.setValueAtTime(synths[channel].gainNode.gain.value, audioCtx.currentTime);
+                    synths[channel].gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.1);
+                }
+            } else {
+                btn.classList.remove('muted');
+                iconSpan.textContent = 'volume_up';
+                
+                // Restore volume if slider is not zero
+                if (synths[channel].volume > 0) {
+                    mixerRow.classList.add('active');
+                }
+                
+                if (isPlaying && synths[channel].gainNode) {
+                    synths[channel].gainNode.gain.setValueAtTime(synths[channel].gainNode.gain.value, audioCtx.currentTime);
+                    synths[channel].gainNode.gain.linearRampToValueAtTime(synths[channel].volume, audioCtx.currentTime + 0.1);
+                }
+            }
+        });
+    });
+
+    // Binaural Beat Frequency Selection
+    document.querySelectorAll('.beat-select-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.beat-select-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            const freq = parseInt(btn.dataset.freq);
+            updateBinauralFrequency(freq);
+        });
+    });
+
+    // Timer selection logic
+    document.querySelectorAll('.timer-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.timer-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            const minutes = btn.dataset.minutes;
+            
+            if (minutes === 'infinite') {
+                isTimerInfinite = true;
+                timerDuration = 0;
+                timerRemaining = 0;
+            } else {
+                isTimerInfinite = false;
+                const parsedMinutes = parseInt(minutes);
+                timerDuration = parsedMinutes * 60;
+                timerRemaining = timerDuration;
+            }
+            
+            resetTimer();
+            
+            // Sync recorder button text
+            const recordBtnText = document.getElementById('record-btn').querySelector('.record-btn-text');
+            if (!isRecording) {
+                if (isTimerInfinite) {
+                    recordBtnText.textContent = '15分の録画を開始'; // fallback recording length
+                } else {
+                    recordBtnText.textContent = `${minutes}分の録画を開始`;
+                }
+            }
+            
+            // If timer is changed while playing, restart timer
+            if (isPlaying) {
+                startTimer();
+            }
+        });
+    });
+
+    // Master Play Button
+    document.getElementById('master-play-btn').addEventListener('click', toggleAudio);
+
+    // Video Recorder buttons
+    document.getElementById('record-btn').addEventListener('click', startRecording);
+    document.getElementById('stop-record-btn').addEventListener('click', stopRecording);
+
+    // Solfeggio Frequency Selection
+    document.querySelectorAll('.solfeggio-select-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.solfeggio-select-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            const freq = parseInt(btn.dataset.freq);
+            updateSolfeggioFrequency(freq);
+        });
+    });
+
+    // Breathing Visual Guide Toggle Button
+    document.getElementById('breath-visual-toggle').addEventListener('click', (e) => {
+        isBreathingVisualActive = !isBreathingVisualActive;
+        
+        const btn = document.getElementById('breath-visual-toggle');
+        if (isBreathingVisualActive) {
+            btn.classList.add('active');
+            btn.textContent = '画面ガイド表示: ON';
+        } else {
+            btn.classList.remove('active');
+            btn.textContent = '画面ガイド表示: OFF';
+        }
+    });
+
+    // Visual style selectors
+    document.querySelectorAll('.visual-style-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.visual-style-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            visualStyle = btn.dataset.style;
+        });
+    });
+
+    // Theme palette selectors
+    document.querySelectorAll('.theme-select-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.theme-select-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            const theme = btn.dataset.theme;
+            activeTheme = theme;
+            
+            // Set body data attribute for CSS gradients overrides
+            document.body.setAttribute('data-active-theme', theme);
+        });
+    });
+
+    // Pre-initialize slider highlighted states based on starting defaults
+    document.querySelectorAll('.sound-slider').forEach(slider => {
+        const channel = slider.dataset.channel;
+        const vol = parseFloat(slider.value);
+        const mixerRow = document.getElementById(`row-${channel}`);
+        if (vol > 0) {
+            mixerRow.classList.add('active');
+        }
+    });
+    updateTimerDisplay();
+    </script>
+</body>
+</html>
