@@ -7,19 +7,33 @@
     <meta name="description" content="プロシージャル合成音源による高品質ASMRジェネレーター。自分好みの癒やし音をミックスして15分のASMR動画を録画・ダウンロードできます。">
     
     <!-- Google Fonts: Outfit & Noto Sans JP -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Material Symbols for premium icons -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     
+    <!-- オンライン時のみ装飾フォントを読み込み（オフラインでもOS標準フォントで成立） -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" media="all"
+          href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap"
+          onerror="this.media='none'">
     <style>
+
+    /* 絵文字アイコン表示の最適化（オフライン対応・全OS共通描画） */
+    .material-symbols-outlined {
+        font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+        font-style: normal;
+        font-weight: normal;
+        line-height: 1;
+        display: inline-block;
+        vertical-align: middle;
+        font-variant-emoji: emoji;
+    }
+
     /* Cozy ASMR Soundscape Studio & Video Recorder Stylesheet */
 
     /* CSS Variables for Premium Color Themes & Visual Tokens */
     :root {
-        --font-primary: 'Outfit', 'Noto Sans JP', sans-serif;
+        --font-primary: 'Outfit', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo', 'Segoe UI', Roboto, sans-serif;
         
         /* Sleek Slate/Blue Base for Glassmorphism */
         --base-dark: #070b19;
@@ -825,6 +839,111 @@
         box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
     }
 
+    /* Panning & Spatial Audio Styles */
+    .slider-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        width: 100%;
+    }
+
+    .pan-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px;
+        border-radius: 50%;
+        transition: color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .pan-btn:hover {
+        color: var(--text-main);
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .pan-btn.active {
+        color: var(--color-primary);
+        filter: drop-shadow(0 0 4px var(--color-accent-glow));
+    }
+
+    .pan-visualizer {
+        width: 100%;
+        height: 14px;
+        display: flex;
+        align-items: center;
+        margin-top: 4px;
+        padding: 0 10px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .pan-track {
+        width: 100%;
+        height: 3px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 1.5px;
+        position: relative;
+        transition: background-color 0.2s ease;
+    }
+
+    .pan-visualizer:hover .pan-track {
+        background: rgba(255, 255, 255, 0.18);
+    }
+
+    .pan-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--text-muted);
+        box-shadow: 0 0 6px rgba(255, 255, 255, 0.2);
+        position: absolute;
+        top: -2px;
+        left: 50%;
+        transform: translateX(-50%);
+        transition: left 0.1s linear, transform 0.1s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .pan-visualizer:hover .pan-dot {
+        transform: translateX(-50%) scale(1.35);
+        background: var(--text-main);
+    }
+
+    /* Active panning or custom panning styles */
+    .pan-visualizer.active .pan-dot {
+        background: var(--color-primary);
+        box-shadow: 0 0 10px var(--color-primary);
+    }
+
+    .melody-select-btn {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        color: var(--text-muted);
+        padding: 6px 4px;
+        font-size: 0.72rem;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .melody-select-btn:hover {
+        background: rgba(255, 255, 255, 0.07);
+        color: var(--text-main);
+    }
+
+    .melody-select-btn.active {
+        background: var(--color-accent-grad);
+        border-color: transparent;
+        color: var(--base-dark);
+        font-weight: 600;
+        box-shadow: 0 0 12px var(--color-accent-glow);
+    }
+
     /* Footer Info */
     .app-footer-info {
         margin-top: 20px;
@@ -907,7 +1026,7 @@
         <!-- Header -->
         <header class="app-header">
             <div class="logo">
-                <span class="material-symbols-outlined logo-icon">blur_on</span>
+                <span class="material-symbols-outlined logo-icon">🌫️</span>
                 <h1>AURA ASMR</h1>
             </div>
             <p class="subtitle">Soundscape Studio & Video Recorder</p>
@@ -918,95 +1037,153 @@
             <!-- Left Side: Sound Mixer -->
             <section class="control-card mixer-card">
                 <h2 class="card-title">
-                    <span class="material-symbols-outlined">tune</span>
+                    <span class="material-symbols-outlined">🎚️</span>
                     サウンドミキサー
                 </h2>
                 <div class="mixer-controls">
                     <!-- Rain Control -->
                     <div class="mixer-row" id="row-rain">
                         <div class="channel-info">
-                            <span class="material-symbols-outlined channel-icon">rainy</span>
+                            <span class="material-symbols-outlined channel-icon">🌧️</span>
                             <div class="channel-text">
                                 <span class="channel-name">雨音 (Rain)</span>
                                 <span class="channel-desc">静かなガラス窓を叩く雨</span>
                             </div>
                         </div>
-                        <div class="slider-container">
-                            <button class="mute-btn" data-channel="rain" aria-label="Mute Rain">
-                                <span class="material-symbols-outlined">volume_up</span>
-                            </button>
-                            <input type="range" min="0" max="1" step="0.01" value="0.5" class="sound-slider" id="slider-rain" data-channel="rain">
-                            <span class="volume-value" id="val-rain">50%</span>
+                        <div class="slider-container flex-col">
+                            <div class="slider-row">
+                                <button class="mute-btn" data-channel="rain" aria-label="Mute Rain">
+                                    <span class="material-symbols-outlined">🔊</span>
+                                </button>
+                                <input type="range" min="0" max="1" step="0.01" value="0.5" class="sound-slider" id="slider-rain" data-channel="rain">
+                                <span class="volume-value" id="val-rain">50%</span>
+                            </div>
+                            <div class="pan-visualizer" id="pan-vis-rain">
+                                <div class="pan-track">
+                                    <div class="pan-dot" id="pan-dot-rain"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Campfire Control -->
                     <div class="mixer-row" id="row-fire">
                         <div class="channel-info">
-                            <span class="material-symbols-outlined channel-icon">local_fire_department</span>
+                            <span class="material-symbols-outlined channel-icon">🔥</span>
                             <div class="channel-text">
                                 <span class="channel-name">暖炉・焚き火 (Fire)</span>
                                 <span class="channel-desc">薪の爆ぜる心地よい音</span>
                             </div>
                         </div>
-                        <div class="slider-container">
-                            <button class="mute-btn" data-channel="fire" aria-label="Mute Fire">
-                                <span class="material-symbols-outlined">volume_up</span>
-                            </button>
-                            <input type="range" min="0" max="1" step="0.01" value="0.0" class="sound-slider" id="slider-fire" data-channel="fire">
-                            <span class="volume-value" id="val-fire">0%</span>
+                        <div class="slider-container flex-col">
+                            <div class="slider-row">
+                                <button class="mute-btn" data-channel="fire" aria-label="Mute Fire">
+                                    <span class="material-symbols-outlined">🔊</span>
+                                </button>
+                                <input type="range" min="0" max="1" step="0.01" value="0.0" class="sound-slider" id="slider-fire" data-channel="fire">
+                                <span class="volume-value" id="val-fire">0%</span>
+                            </div>
+                            <div class="pan-visualizer" id="pan-vis-fire">
+                                <div class="pan-track">
+                                    <div class="pan-dot" id="pan-dot-fire"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Ocean Waves Control -->
                     <div class="mixer-row" id="row-waves">
                         <div class="channel-info">
-                            <span class="material-symbols-outlined channel-icon">waves</span>
+                            <span class="material-symbols-outlined channel-icon">🌊</span>
                             <div class="channel-text">
                                 <span class="channel-name">波の音 (Waves)</span>
                                 <span class="channel-desc">満ち引きを繰り返す波</span>
                             </div>
                         </div>
-                        <div class="slider-container">
-                            <button class="mute-btn" data-channel="waves" aria-label="Mute Waves">
-                                <span class="material-symbols-outlined">volume_up</span>
-                            </button>
-                            <input type="range" min="0" max="1" step="0.01" value="0.0" class="sound-slider" id="slider-waves" data-channel="waves">
-                            <span class="volume-value" id="val-waves">0%</span>
+                        <div class="slider-container flex-col">
+                            <div class="slider-row">
+                                <button class="mute-btn" data-channel="waves" aria-label="Mute Waves">
+                                    <span class="material-symbols-outlined">🔊</span>
+                                </button>
+                                <input type="range" min="0" max="1" step="0.01" value="0.0" class="sound-slider" id="slider-waves" data-channel="waves">
+                                <span class="volume-value" id="val-waves">0%</span>
+                            </div>
+                            <div class="pan-visualizer" id="pan-vis-waves">
+                                <div class="pan-track">
+                                    <div class="pan-dot" id="pan-dot-waves"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Wind Control -->
                     <div class="mixer-row" id="row-wind">
                         <div class="channel-info">
-                            <span class="material-symbols-outlined channel-icon">air</span>
+                            <span class="material-symbols-outlined channel-icon">💨</span>
                             <div class="channel-text">
                                 <span class="channel-name">風の音 (Wind)</span>
                                 <span class="channel-desc">梢をそよぐ穏やかな風</span>
                             </div>
                         </div>
-                        <div class="slider-container">
-                            <button class="mute-btn" data-channel="wind" aria-label="Mute Wind">
-                                <span class="material-symbols-outlined">volume_up</span>
-                            </button>
-                            <input type="range" min="0" max="1" step="0.01" value="0.0" class="sound-slider" id="slider-wind" data-channel="wind">
-                            <span class="volume-value" id="val-wind">0%</span>
+                        <div class="slider-container flex-col">
+                            <div class="slider-row">
+                                <button class="mute-btn" data-channel="wind" aria-label="Mute Wind">
+                                    <span class="material-symbols-outlined">🔊</span>
+                                </button>
+                                <input type="range" min="0" max="1" step="0.01" value="0.0" class="sound-slider" id="slider-wind" data-channel="wind">
+                                <span class="volume-value" id="val-wind">0%</span>
+                            </div>
+                            <div class="pan-visualizer" id="pan-vis-wind">
+                                <div class="pan-track">
+                                    <div class="pan-dot" id="pan-dot-wind"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Healing Melody Control -->
+                    <div class="mixer-row" id="row-melody">
+                        <div class="channel-info">
+                            <span class="material-symbols-outlined channel-icon">🎵</span>
+                            <div class="channel-text">
+                                <span class="channel-name">癒やしメロディ (Melody)</span>
+                                <span class="channel-desc">心地よく流れる自動生成のヒーリング曲</span>
+                            </div>
+                        </div>
+                        <div class="slider-container flex-col">
+                            <div class="slider-row">
+                                <button class="mute-btn" data-channel="melody" aria-label="Mute Melody">
+                                    <span class="material-symbols-outlined">🔊</span>
+                                </button>
+                                <input type="range" min="0" max="1" step="0.01" value="0.0" class="sound-slider" id="slider-melody" data-channel="melody">
+                                <span class="volume-value" id="val-melody">0%</span>
+                            </div>
+                            <div class="beats-selector-group">
+                                <button class="melody-select-btn active" data-preset="cosmic" title="星夜のオルゴール - 高くきらめく癒やしの音">星夜のオルゴール</button>
+                                <button class="melody-select-btn" data-preset="chime" title="森の木漏れ日 - 風にそよぐ澄んだ風鈴の音">森の木漏れ日</button>
+                                <button class="melody-select-btn" data-preset="pad" title="深海のゆりかご - 優しく包み込むアンビエントパッド">深海のゆりかご</button>
+                            </div>
+                            <div class="pan-visualizer" id="pan-vis-melody">
+                                <div class="pan-track">
+                                    <div class="pan-dot" id="pan-dot-melody"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Binaural Beats Control -->
                     <div class="mixer-row" id="row-binaural">
                         <div class="channel-info">
-                            <span class="material-symbols-outlined channel-icon">hearing</span>
+                            <span class="material-symbols-outlined channel-icon">👂</span>
                             <div class="channel-text">
                                 <span class="channel-name">バイノーラルビート (Beats)</span>
                                 <span class="channel-desc">脳をリラックスに導く周波数</span>
                             </div>
                         </div>
                         <div class="slider-container flex-col">
-                            <div class="binaural-controls-row">
+                            <div class="slider-row">
                                 <button class="mute-btn" data-channel="binaural" aria-label="Mute Binaural Beats">
-                                    <span class="material-symbols-outlined">volume_up</span>
+                                    <span class="material-symbols-outlined">🔊</span>
                                 </button>
                                 <input type="range" min="0" max="1" step="0.01" value="0.0" class="sound-slider" id="slider-binaural" data-channel="binaural">
                                 <span class="volume-value" id="val-binaural">0%</span>
@@ -1022,16 +1199,16 @@
                     <!-- Solfeggio Frequencies Control -->
                     <div class="mixer-row" id="row-solfeggio">
                         <div class="channel-info">
-                            <span class="material-symbols-outlined channel-icon">spatial_audio_off</span>
+                            <span class="material-symbols-outlined channel-icon">🎧</span>
                             <div class="channel-text">
                                 <span class="channel-name">ソルフェジオ周波数 (Solfeggio)</span>
                                 <span class="channel-desc">心身を整える奇跡の周波数ヒーリング</span>
                             </div>
                         </div>
                         <div class="slider-container flex-col">
-                            <div class="binaural-controls-row">
+                            <div class="slider-row">
                                 <button class="mute-btn" data-channel="solfeggio" aria-label="Mute Solfeggio">
-                                    <span class="material-symbols-outlined">volume_up</span>
+                                    <span class="material-symbols-outlined">🔊</span>
                                 </button>
                                 <input type="range" min="0" max="1" step="0.01" value="0.0" class="sound-slider" id="slider-solfeggio" data-channel="solfeggio">
                                 <span class="volume-value" id="val-solfeggio">0%</span>
@@ -1041,46 +1218,63 @@
                                 <button class="solfeggio-select-btn" data-freq="432" title="自然との共鳴・緊張緩和 (432Hz)">432 Hz (自律神経調律)</button>
                                 <button class="solfeggio-select-btn" data-freq="396" title="トラウマ・恐怖・不安の解放 (396Hz)">396 Hz (恐怖解放)</button>
                             </div>
+                            <div class="pan-visualizer" id="pan-vis-solfeggio">
+                                <div class="pan-track">
+                                    <div class="pan-dot" id="pan-dot-solfeggio"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Deep Brown Noise Control -->
                     <div class="mixer-row" id="row-brown">
                         <div class="channel-info">
-                            <span class="material-symbols-outlined channel-icon">filter_hdr</span>
+                            <span class="material-symbols-outlined channel-icon">⛰️</span>
                             <div class="channel-text">
                                 <span class="channel-name">ディープブラウンノイズ (Brown)</span>
                                 <span class="channel-desc">脳の雑念を消し去る超低域ノイズ</span>
                             </div>
                         </div>
-                        <div class="slider-container">
-                            <button class="mute-btn" data-channel="brown" aria-label="Mute Brown Noise">
-                                <span class="material-symbols-outlined">volume_up</span>
-                            </button>
-                            <input type="range" min="0" max="1" step="0.01" value="0.0" class="sound-slider" id="slider-brown" data-channel="brown">
-                            <span class="volume-value" id="val-brown">0%</span>
+                        <div class="slider-container flex-col">
+                            <div class="slider-row">
+                                <button class="mute-btn" data-channel="brown" aria-label="Mute Brown Noise">
+                                    <span class="material-symbols-outlined">🔊</span>
+                                </button>
+                                <input type="range" min="0" max="1" step="0.01" value="0.0" class="sound-slider" id="slider-brown" data-channel="brown">
+                                <span class="volume-value" id="val-brown">0%</span>
+                            </div>
+                            <div class="pan-visualizer" id="pan-vis-brown">
+                                <div class="pan-track">
+                                    <div class="pan-dot" id="pan-dot-brown"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Breathing Guide Control -->
                     <div class="mixer-row" id="row-breath">
                         <div class="channel-info">
-                            <span class="material-symbols-outlined channel-icon">self_improvement</span>
+                            <span class="material-symbols-outlined channel-icon">🧘</span>
                             <div class="channel-text">
                                 <span class="channel-name">呼吸同調ガイド (Breathing Guide)</span>
                                 <span class="channel-desc">心拍を安定させる呼吸アシスト音源</span>
                             </div>
                         </div>
                         <div class="slider-container flex-col">
-                            <div class="binaural-controls-row">
+                            <div class="slider-row">
                                 <button class="mute-btn" data-channel="breath" aria-label="Mute Breathing Guide">
-                                    <span class="material-symbols-outlined">volume_up</span>
+                                    <span class="material-symbols-outlined">🔊</span>
                                 </button>
                                 <input type="range" min="0" max="1" step="0.01" value="0.0" class="sound-slider" id="slider-breath" data-channel="breath">
                                 <span class="volume-value" id="val-breath">0%</span>
                             </div>
                             <div class="beats-selector-group">
                                 <button class="breath-guide-toggle-btn active" id="breath-visual-toggle" title="画面上に呼吸ガイドサークルを表示します">画面ガイド表示: ON</button>
+                            </div>
+                            <div class="pan-visualizer" id="pan-vis-breath">
+                                <div class="pan-track">
+                                    <div class="pan-dot" id="pan-dot-breath"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1093,17 +1287,43 @@
                 <section class="control-card control-center">
                     <div class="play-state-container">
                         <button id="master-play-btn" class="glowing-play-btn">
-                            <span class="material-symbols-outlined play-icon">play_arrow</span>
+                            <span class="material-symbols-outlined play-icon">▶️</span>
                             <span class="btn-text">オーディオを開始する</span>
                         </button>
                         <p class="startup-hint">※ブラウザの音声を有効にするため、ボタンを押して開始してください。</p>
                     </div>
                 </section>
 
+                <!-- Global Panning / Fluctuation Control -->
+                <section class="control-card global-pan-card">
+                    <h2 class="card-title">
+                        <span class="material-symbols-outlined">🎧</span>
+                        立体音響・揺らぎ設定
+                    </h2>
+                    <p class="record-description" style="margin-bottom: 15px;">
+                        心地よい音の揺らぎ（左右の自動往復スウィープ）を全体でオン・オフし、移動時間を調整できます。
+                    </p>
+                    <div style="display: flex; flex-direction: column; gap: 18px;">
+                        <!-- Toggle Button -->
+                        <button id="global-pan-toggle-btn" class="breath-guide-toggle-btn" style="padding: 12px; font-size: 0.9rem; font-weight: 600; margin-top: 0;">
+                            立体音響（揺らぎ機能）: OFF
+                        </button>
+                        
+                        <!-- Speed Control Slider -->
+                        <div class="record-settings" style="margin-bottom: 0; flex-direction: column; align-items: stretch; gap: 8px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <label for="global-pan-speed-slider" class="settings-label">移動時間 (往復周期):</label>
+                                <span class="volume-value" id="global-pan-speed-value" style="font-weight: 600; color: var(--color-primary);">15秒</span>
+                            </div>
+                            <input type="range" min="5" max="60" step="1" value="15" class="sound-slider" id="global-pan-speed-slider">
+                        </div>
+                    </div>
+                </section>
+
                 <!-- Sleep Timer -->
                 <section class="control-card timer-card">
                     <h2 class="card-title">
-                        <span class="material-symbols-outlined">hourglass_empty</span>
+                        <span class="material-symbols-outlined">⏳</span>
                         タイマー設定
                     </h2>
                     <div class="timer-selector">
@@ -1122,7 +1342,7 @@
                 <!-- Video Recording -->
                 <section class="control-card record-card">
                     <h2 class="card-title">
-                        <span class="material-symbols-outlined">videocam</span>
+                        <span class="material-symbols-outlined">🎥</span>
                         ASMR動画レコーダー
                     </h2>
                     <p class="record-description">
@@ -1138,11 +1358,11 @@
                     </div>
                     <div class="record-controls">
                         <button id="record-btn" class="record-btn" disabled>
-                            <span class="material-symbols-outlined record-icon">fiber_manual_record</span>
+                            <span class="material-symbols-outlined record-icon">⏺️</span>
                             <span class="record-btn-text">15分の録画を開始</span>
                         </button>
                         <button id="stop-record-btn" class="record-btn stop-btn hidden">
-                            <span class="material-symbols-outlined">stop</span>
+                            <span class="material-symbols-outlined">⏹️</span>
                             <span>録画を停止して保存</span>
                         </button>
                     </div>
@@ -1162,7 +1382,7 @@
         <!-- Visualizer Customizer -->
         <section class="control-card visualizer-settings-card">
             <h2 class="card-title">
-                <span class="material-symbols-outlined">palette</span>
+                <span class="material-symbols-outlined">🎨</span>
                 ビジュアル設定
             </h2>
             <div class="visualizer-options">
@@ -1213,14 +1433,15 @@
 
     // Synthesizer nodes structure
     const synths = {
-        rain: { gainNode: null, sourceNodes: [], volume: 0.5, isMuted: false },
-        fire: { gainNode: null, sourceNodes: [], timerId: null, volume: 0.0, isMuted: false },
-        waves: { gainNode: null, sourceNodes: [], volume: 0.0, isMuted: false },
-        wind: { gainNode: null, sourceNodes: [], volume: 0.0, isMuted: false },
+        rain: { gainNode: null, panNode: null, isPanning: false, panAngle: 0, panSpeed: 0.005, manualPan: 0, sourceNodes: [], volume: 0.5, isMuted: false },
+        fire: { gainNode: null, panNode: null, isPanning: false, panAngle: 1.2, panSpeed: 0.004, manualPan: 0, sourceNodes: [], timerId: null, volume: 0.0, isMuted: false },
+        waves: { gainNode: null, panNode: null, isPanning: false, panAngle: 2.4, panSpeed: 0.003, manualPan: 0, sourceNodes: [], volume: 0.0, isMuted: false },
+        wind: { gainNode: null, panNode: null, isPanning: false, panAngle: 3.6, panSpeed: 0.006, manualPan: 0, sourceNodes: [], volume: 0.0, isMuted: false },
+        melody: { gainNode: null, panNode: null, isPanning: false, panAngle: 4.2, panSpeed: 0.004, manualPan: 0, preset: 'cosmic', sequencerTimerId: null, delayNode: null, delayFeedback: null, volume: 0.0, isMuted: false },
         binaural: { gainNode: null, leftOsc: null, rightOsc: null, merger: null, freq: 6, volume: 0.0, isMuted: false },
-        solfeggio: { gainNode: null, oscNode: null, lfoNode: null, freq: 528, volume: 0.0, isMuted: false },
-        brown: { gainNode: null, sourceNodes: [], volume: 0.0, isMuted: false },
-        breath: { gainNode: null, oscNode: null, lfoNode: null, volume: 0.0, isMuted: false }
+        solfeggio: { gainNode: null, panNode: null, isPanning: false, panAngle: 0.8, panSpeed: 0.003, manualPan: 0, oscNode: null, lfoNode: null, freq: 528, volume: 0.0, isMuted: false },
+        brown: { gainNode: null, panNode: null, isPanning: false, panAngle: 1.8, panSpeed: 0.003, manualPan: 0, sourceNodes: [], volume: 0.0, isMuted: false },
+        breath: { gainNode: null, panNode: null, isPanning: false, panAngle: 2.8, panSpeed: 0.003, manualPan: 0, oscNode: null, lfoNode: null, volume: 0.0, isMuted: false }
     };
 
     // Buffers for synthesizers
@@ -1229,6 +1450,10 @@
 
     // Breathing visual guide state
     let isBreathingVisualActive = true;
+
+    // Global Panning / Fluctuation State
+    let isGlobalPanning = false;
+    let globalPanDuration = 15; // in seconds
 
     // Timer state
     let timerDuration = 15 * 60; // default 15 minutes in seconds
@@ -1734,6 +1959,177 @@
         }
     }
 
+    // Start Healing Melodies Sequencer
+    function startMelody() {
+        if (!audioCtx) return;
+        
+        const delayNode = audioCtx.createDelay(2.0);
+        delayNode.delayTime.setValueAtTime(0.6, audioCtx.currentTime); // 600ms echo
+        
+        const feedback = audioCtx.createGain();
+        feedback.gain.setValueAtTime(0.4, audioCtx.currentTime); // 40% feedback
+        
+        // Connect echo path
+        delayNode.connect(feedback);
+        feedback.connect(delayNode);
+        
+        // Connect output paths
+        delayNode.connect(synths.melody.gainNode); // wet path
+        
+        synths.melody.delayNode = delayNode;
+        synths.melody.delayFeedback = feedback;
+        
+        // Pentatonic scales for presets
+        const scales = {
+            // Cosmic Chimes: C Major Pentatonic (sparkling bells/music box)
+            cosmic: [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25, 783.99, 880.00],
+            // Forest Chimes: Akebono scale (Japanese wind chimes)
+            chime: [220.00, 246.94, 261.63, 329.63, 349.23, 440.00, 493.88, 523.25, 659.25, 698.46],
+            // Deep Pad: Low dyad swells
+            pad: [110.00, 130.81, 164.81, 196.00, 220.00, 261.63, 329.63, 392.00]
+        };
+        
+        function playNextNote() {
+            if (!isPlaying) return;
+            
+            // Even if melody channel volume is 0 or muted, run the timer so it is ready when unmuted, but skip note playback
+            if (synths.melody.isMuted || synths.melody.volume === 0) {
+                const nextDelay = synths.melody.preset === 'pad' ? 4000 + Math.random() * 2000 : 1500 + Math.random() * 2000;
+                synths.melody.sequencerTimerId = setTimeout(playNextNote, nextDelay);
+                return;
+            }
+            
+            const now = audioCtx.currentTime;
+            const preset = synths.melody.preset;
+            const scale = scales[preset];
+            
+            if (preset === 'cosmic') {
+                // 星夜のオルゴール - Music Box
+                const noteFreq = scale[Math.floor(Math.random() * scale.length)];
+                
+                const osc1 = audioCtx.createOscillator();
+                const osc2 = audioCtx.createOscillator();
+                const noteGain = audioCtx.createGain();
+                
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(noteFreq, now);
+                
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(noteFreq * 2.0, now); // Octave overtone
+                const gain2 = audioCtx.createGain();
+                gain2.gain.setValueAtTime(0.08, now);
+                
+                osc2.connect(gain2);
+                gain2.connect(noteGain);
+                
+                noteGain.gain.setValueAtTime(0, now);
+                noteGain.gain.linearRampToValueAtTime(0.22, now + 0.005);
+                noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.8);
+                
+                osc1.connect(noteGain);
+                noteGain.connect(synths.melody.gainNode);
+                noteGain.connect(delayNode);
+                
+                osc1.start(now);
+                osc2.start(now);
+                osc1.stop(now + 2.0);
+                osc2.stop(now + 2.0);
+                
+            } else if (preset === 'chime') {
+                // 森の木漏れ日 - Windchimes (Resonant metal chime sound)
+                const noteFreq = scale[Math.floor(Math.random() * scale.length)];
+                
+                const osc = audioCtx.createOscillator();
+                const metalMod = audioCtx.createOscillator();
+                const noteGain = audioCtx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(noteFreq, now);
+                
+                // Frequency Modulation for high metallic ring
+                metalMod.type = 'sine';
+                metalMod.frequency.setValueAtTime(noteFreq * 5.7, now);
+                const modGain = audioCtx.createGain();
+                modGain.gain.setValueAtTime(0.12, now);
+                modGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+                
+                metalMod.connect(modGain);
+                modGain.connect(noteGain);
+                
+                noteGain.gain.setValueAtTime(0, now);
+                noteGain.gain.linearRampToValueAtTime(0.18, now + 0.008);
+                noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.5);
+                
+                osc.connect(noteGain);
+                noteGain.connect(synths.melody.gainNode);
+                noteGain.connect(delayNode);
+                
+                osc.start(now);
+                metalMod.start(now);
+                osc.stop(now + 2.8);
+                metalMod.stop(now + 0.1);
+                
+            } else if (preset === 'pad') {
+                // 深海のゆりかご - Low drone pads
+                const idx1 = Math.floor(Math.random() * scale.length);
+                let idx2 = Math.floor(Math.random() * scale.length);
+                if (idx1 === idx2) idx2 = (idx2 + 2) % scale.length;
+                
+                const freq1 = scale[idx1];
+                const freq2 = scale[idx2];
+                
+                const osc1 = audioCtx.createOscillator();
+                const osc2 = audioCtx.createOscillator();
+                const filter = audioCtx.createBiquadFilter();
+                const noteGain = audioCtx.createGain();
+                
+                osc1.type = 'triangle';
+                osc1.frequency.setValueAtTime(freq1, now);
+                
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(freq2, now);
+                
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(280, now);
+                
+                noteGain.gain.setValueAtTime(0, now);
+                noteGain.gain.linearRampToValueAtTime(0.15, now + 2.0); // slow attack
+                noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 5.5); // long release
+                
+                osc1.connect(filter);
+                osc2.connect(filter);
+                filter.connect(noteGain);
+                noteGain.connect(synths.melody.gainNode);
+                
+                osc1.start(now);
+                osc2.start(now);
+                osc1.stop(now + 6.0);
+                osc2.stop(now + 6.0);
+            }
+            
+            const nextDelay = preset === 'pad' ? 4500 + Math.random() * 2000 : 1600 + Math.random() * 2200;
+            synths.melody.sequencerTimerId = setTimeout(playNextNote, nextDelay);
+        }
+        
+        playNextNote();
+    }
+
+    // Stop Healing Melodies Sequencer
+    function stopMelody() {
+        if (synths.melody.sequencerTimerId) {
+            clearTimeout(synths.melody.sequencerTimerId);
+            synths.melody.sequencerTimerId = null;
+        }
+        if (synths.melody.delayNode) {
+            synths.melody.delayNode.disconnect();
+            synths.melody.delayNode = null;
+        }
+        if (synths.melody.delayFeedback) {
+            synths.melody.delayFeedback.disconnect();
+            synths.melody.delayFeedback = null;
+        }
+    }
+
     // Stop all sound sources
     function stopAllSynthesizers() {
         // Clear rain droplet interval
@@ -1756,6 +2152,8 @@
                 stopSolfeggio();
             } else if (key === 'breath') {
                 stopBreath();
+            } else if (key === 'melody') {
+                stopMelody();
             } else {
                 synths[key].sourceNodes.forEach(node => {
                     try {
@@ -1796,13 +2194,23 @@
         pinkNoiseBuffer = createPinkNoiseBuffer(audioCtx, 12);
         brownNoiseBuffer = createBrownNoiseBuffer(audioCtx, 12);
         
-        // Set up channel gains
+        // Set up channel gains and stereo panners
         Object.keys(synths).forEach(key => {
             const gainNode = audioCtx.createGain();
             // Set initial volumes based on sliders
             const initialVol = synths[key].isMuted ? 0 : synths[key].volume;
             gainNode.gain.setValueAtTime(initialVol, audioCtx.currentTime);
-            gainNode.connect(masterGain);
+            
+            if (key !== 'binaural') {
+                const panNode = audioCtx.createStereoPanner();
+                panNode.pan.setValueAtTime(0, audioCtx.currentTime);
+                gainNode.connect(panNode);
+                panNode.connect(masterGain);
+                synths[key].panNode = panNode;
+            } else {
+                gainNode.connect(masterGain);
+            }
+            
             synths[key].gainNode = gainNode;
         });
     }
@@ -1824,6 +2232,7 @@
             startCampfire();
             startOceanWaves();
             startWind();
+            startMelody();
             startBinauralBeats();
             startSolfeggio();
             startBrown();
@@ -1832,7 +2241,7 @@
             // Update UI Button
             const playBtn = document.getElementById('master-play-btn');
             playBtn.classList.add('playing');
-            playBtn.querySelector('.play-icon').textContent = 'pause';
+            playBtn.querySelector('.play-icon').textContent = '⏸️';
             playBtn.querySelector('.btn-text').textContent = 'オーディオを一時停止';
             
             // Start Timer
@@ -1853,7 +2262,7 @@
             // Update UI Button
             const playBtn = document.getElementById('master-play-btn');
             playBtn.classList.remove('playing');
-            playBtn.querySelector('.play-icon').textContent = 'play_arrow';
+            playBtn.querySelector('.play-icon').textContent = '▶️';
             playBtn.querySelector('.btn-text').textContent = 'オーディオを開始する';
             
             // Pause Timer
@@ -1940,6 +2349,35 @@
         }
         
         animationFrameId = requestAnimationFrame(animate);
+        
+        // Update Stereo Panning
+        if (audioCtx) {
+            const globalPanSpeed = (2 * Math.PI) / (60 * globalPanDuration);
+            
+            Object.keys(synths).forEach(key => {
+                const synth = synths[key];
+                if (synth.panNode) {
+                    if (isGlobalPanning) {
+                        synth.panAngle += globalPanSpeed;
+                        const panVal = Math.sin(synth.panAngle) * 0.8; // pan between -0.8 and 0.8
+                        synth.panNode.pan.setValueAtTime(panVal, audioCtx.currentTime);
+                        
+                        const dot = document.getElementById(`pan-dot-${key}`);
+                        if (dot) {
+                            const percent = 50 + (panVal / 0.8) * 40;
+                            dot.style.left = `${percent}%`;
+                        }
+                    } else {
+                        synth.panNode.pan.setValueAtTime(synth.manualPan, audioCtx.currentTime);
+                        const dot = document.getElementById(`pan-dot-${key}`);
+                        if (dot) {
+                            const percent = 50 + (synth.manualPan / 0.8) * 40;
+                            dot.style.left = `${percent}%`;
+                        }
+                    }
+                }
+            });
+        }
         
         // Set colors based on active theme
         const activeColorArray = themeColors[activeTheme] || themeColors.cyber;
@@ -2398,7 +2836,7 @@
             
             if (isMuted) {
                 btn.classList.add('muted');
-                iconSpan.textContent = 'volume_off';
+                iconSpan.textContent = '🔇';
                 mixerRow.classList.remove('active');
                 
                 // Set volume node to 0
@@ -2408,7 +2846,7 @@
                 }
             } else {
                 btn.classList.remove('muted');
-                iconSpan.textContent = 'volume_up';
+                iconSpan.textContent = '🔊';
                 
                 // Restore volume if slider is not zero
                 if (synths[channel].volume > 0) {
@@ -2420,6 +2858,118 @@
                     synths[channel].gainNode.gain.linearRampToValueAtTime(synths[channel].volume, audioCtx.currentTime + 0.1);
                 }
             }
+        });
+    });
+
+    // Global Panning Toggle listener
+    document.getElementById('global-pan-toggle-btn').addEventListener('click', (e) => {
+        isGlobalPanning = !isGlobalPanning;
+        
+        const btn = document.getElementById('global-pan-toggle-btn');
+        if (isGlobalPanning) {
+            btn.classList.add('active');
+            btn.textContent = '立体音響（揺らぎ機能）: ON';
+            document.querySelectorAll('.pan-visualizer').forEach(vis => vis.classList.add('active'));
+        } else {
+            btn.classList.remove('active');
+            btn.textContent = '立体音響（揺らぎ機能）: OFF';
+            document.querySelectorAll('.pan-visualizer').forEach(vis => vis.classList.remove('active'));
+        }
+    });
+
+    // Global Panning Speed slider listener
+    document.getElementById('global-pan-speed-slider').addEventListener('input', (e) => {
+        globalPanDuration = parseInt(e.target.value);
+        document.getElementById('global-pan-speed-value').textContent = `${globalPanDuration}秒`;
+    });
+
+    // Helper to update manual panning based on event coords
+    function updateManualPan(e, element, channel) {
+        const rect = element.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const width = rect.width;
+        let percent = x / width;
+        if (percent < 0) percent = 0;
+        if (percent > 1) percent = 1;
+        
+        // Map [0, 1] to [-0.8, 0.8] range
+        const panVal = (percent - 0.5) * 1.6;
+        
+        const synth = synths[channel];
+        if (synth) {
+            synth.manualPan = panVal;
+            
+            // Turn off global auto-pan when manually adjusting
+            if (isGlobalPanning) {
+                isGlobalPanning = false;
+                const globalBtn = document.getElementById('global-pan-toggle-btn');
+                if (globalBtn) {
+                    globalBtn.classList.remove('active');
+                    globalBtn.textContent = '立体音響（揺らぎ機能）: OFF';
+                }
+                document.querySelectorAll('.pan-visualizer').forEach(v => v.classList.remove('active'));
+            }
+            
+            // Apply immediately if active
+            if (isPlaying && synth.panNode) {
+                synth.panNode.pan.setValueAtTime(panVal, audioCtx.currentTime);
+            }
+            
+            // Position dot
+            const dot = document.getElementById(`pan-dot-${channel}`);
+            if (dot) {
+                dot.style.left = `${percent * 100}%`;
+            }
+        }
+    }
+
+    // Manual Pan Click & Drag Listeners
+    document.querySelectorAll('.pan-visualizer').forEach(vis => {
+        const channel = vis.id.replace('pan-vis-', '');
+        
+        vis.addEventListener('mousedown', (e) => {
+            updateManualPan(e, vis, channel);
+            
+            const onMouseMove = (moveEvent) => {
+                updateManualPan(moveEvent, vis, channel);
+            };
+            
+            const onMouseUp = () => {
+                window.removeEventListener('mousemove', onMouseMove);
+                window.removeEventListener('mouseup', onMouseUp);
+            };
+            
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mouseup', onMouseUp);
+        });
+        
+        vis.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 0) return;
+            updateManualPan(e.touches[0], vis, channel);
+            
+            const onTouchMove = (moveEvent) => {
+                if (moveEvent.touches.length === 0) return;
+                updateManualPan(moveEvent.touches[0], vis, channel);
+            };
+            
+            const onTouchEnd = () => {
+                window.removeEventListener('touchmove', onTouchMove);
+                window.removeEventListener('touchend', onTouchEnd);
+            };
+            
+            window.addEventListener('touchmove', onTouchMove);
+            window.addEventListener('touchend', onTouchEnd);
+        });
+    });
+
+    // Melody preset selection
+    document.querySelectorAll('.melody-select-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.melody-select-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            const preset = btn.dataset.preset;
+            synths.melody.preset = preset;
         });
     });
 
